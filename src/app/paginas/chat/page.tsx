@@ -5,7 +5,7 @@ import Mensaje from '@/app/componentes/Mensaje';
 import InputMensaje from '@/app/componentes/InputMensaje';
 
 type MensajeData = {
-  texto: string;
+  texto: string | Blob;
   propio: boolean;
 };
 
@@ -17,15 +17,14 @@ export default function ChatIndividualPage() {
 
   const chatRef = useRef<HTMLDivElement>(null);
 
-  const enviarMensaje = (nuevoMensaje: string) => {
+  const enviarMensaje = (nuevoMensaje: string | Blob) => {
     setMensajes((prev) => [...prev, { texto: nuevoMensaje, propio: true }]);
   };
 
-  // useEffect para bloquear zoom por teclado/scroll
   useEffect(() => {
     const bloquearZoom = (e: WheelEvent | KeyboardEvent) => {
       if (
-        (e as WheelEvent).ctrlKey || 
+        (e as WheelEvent).ctrlKey ||
         ['+', '-', '=', '_'].includes((e as KeyboardEvent).key)
       ) {
         e.preventDefault();
@@ -41,17 +40,13 @@ export default function ChatIndividualPage() {
     };
   }, []);
 
-  //Scroll fondo del chat
   useEffect(() => {
     chatRef.current?.scrollTo(0, chatRef.current.scrollHeight);
   }, [mensajes]);
 
   return (
     <div className="flex flex-col h-screen bg-[#e5ddd5]">
-      <div
-        ref={chatRef}
-        className="flex-1 overflow-y-auto pt-4 pb-2"
-      >
+      <div ref={chatRef} className="flex-1 overflow-y-auto pt-4 pb-2">
         {mensajes.map((m, i) => (
           <Mensaje key={i} texto={m.texto} propio={m.propio} />
         ))}
