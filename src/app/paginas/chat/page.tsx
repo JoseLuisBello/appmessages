@@ -21,6 +21,27 @@ export default function ChatIndividualPage() {
     setMensajes((prev) => [...prev, { texto: nuevoMensaje, propio: true }]);
   };
 
+  // useEffect para bloquear zoom por teclado/scroll
+  useEffect(() => {
+    const bloquearZoom = (e: WheelEvent | KeyboardEvent) => {
+      if (
+        (e as WheelEvent).ctrlKey || 
+        ['+', '-', '=', '_'].includes((e as KeyboardEvent).key)
+      ) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('wheel', bloquearZoom, { passive: false });
+    window.addEventListener('keydown', bloquearZoom);
+
+    return () => {
+      window.removeEventListener('wheel', bloquearZoom);
+      window.removeEventListener('keydown', bloquearZoom);
+    };
+  }, []);
+
+  //Scroll fondo del chat
   useEffect(() => {
     chatRef.current?.scrollTo(0, chatRef.current.scrollHeight);
   }, [mensajes]);
