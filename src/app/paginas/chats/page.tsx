@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { IoPersonCircleOutline } from 'react-icons/io5';
 
 const chats = [
@@ -29,11 +30,10 @@ const chats = [
 
 export default function ListaChats() {
   const [chatActivo, setChatActivo] = useState<number | null>(null);
+  const router = useRouter();
 
   const irAlPerfil = () => {
-    // Simula ir al perfil
-    alert('Ir al perfil del usuario');
-    // Puedes usar router.push('/perfil') si usas Next.js
+    router.push('/paginas/perfil');
   };
 
   return (
@@ -41,7 +41,7 @@ export default function ListaChats() {
       {/* Encabezado con botón de perfil */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Chats</h2>
-        <button onClick={irAlPerfil} title="Perfil">
+        <button onClick={irAlPerfil} title="Ir al perfil">
           <IoPersonCircleOutline size={30} />
         </button>
       </div>
