@@ -37,45 +37,37 @@ export default function ListaChats() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col p-4">
-      {/* Encabezado con botón de perfil */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Chats</h2>
-        <button onClick={irAlPerfil} title="Ir al perfil">
-          <IoPersonCircleOutline size={30} />
+    <div className="min-h-screen bg-white text-black p-4">
+      {/* Encabezado */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Chats</h1>
+        <button
+          onClick={irAlPerfil}
+          title="Ir al perfil"
+          className="text-gray-600 hover:text-black transition"
+        >
+          <IoPersonCircleOutline size={32} />
         </button>
       </div>
 
       {/* Lista de chats */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         {chats.map((chat) => (
           <div
             key={chat.id}
             onClick={() => setChatActivo(chat.id)}
-            style={{
-              padding: '12px',
-              border: '1px solid #ccc',
-              borderRadius: '6px',
-              background: chatActivo === chat.id ? '#f0f0f0' : '#fff',
-              cursor: 'pointer',
-            }}
+            className={`p-4 rounded-lg border shadow-sm cursor-pointer ${
+              chatActivo === chat.id ? 'bg-gray-100' : 'bg-white hover:bg-gray-50'
+            } transition`}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <strong>{chat.nombre}</strong>
-              <span style={{ fontSize: '0.9em', color: '#666' }}>{chat.hora}</span>
+            <div className="flex justify-between items-center mb-1">
+              <h2 className="font-semibold">{chat.nombre}</h2>
+              <span className="text-sm text-gray-500">{chat.hora}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-              <span style={{ fontSize: '0.95em', color: '#333' }}>{chat.ultimoMensaje}</span>
+            <div className="flex justify-between items-center text-sm">
+              <p className="text-gray-700 truncate">{chat.ultimoMensaje}</p>
               {chat.sinLeer > 0 && (
-                <span
-                  style={{
-                    fontSize: '0.8em',
-                    backgroundColor: '#ddd',
-                    borderRadius: '999px',
-                    padding: '2px 8px',
-                    marginLeft: '8px',
-                  }}
-                >
+                <span className="ml-2 text-xs bg-gray-300 text-gray-800 rounded-full px-2 py-0.5">
                   {chat.sinLeer}
                 </span>
               )}
