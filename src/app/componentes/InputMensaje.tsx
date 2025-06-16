@@ -1,3 +1,4 @@
+// InputMensaje.tsx
 'use client';
 
 import { useState, useRef } from 'react';
@@ -12,6 +13,7 @@ export default function InputMensaje({ onEnviar }: Props) {
   const [mensaje, setMensaje] = useState('');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const recordStartTimeRef = useRef<number | null>(null);
 
   const handleEnviar = () => {
     if (mensaje.trim() === '') return;
@@ -25,6 +27,8 @@ export default function InputMensaje({ onEnviar }: Props) {
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
+      // Guardamos inicio de grabación
+      recordStartTimeRef.current = Date.now();
 
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
@@ -33,9 +37,24 @@ export default function InputMensaje({ onEnviar }: Props) {
       };
 
       mediaRecorder.onstop = () => {
+        // Aquí detenemos y procesamos Blob
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        // Calculamos duración aproximada en segundos
+        if (recordStartTimeRef.current !== null) {
+          const durMs = Date.now() - recordStartTimeRef.current;
+          const durSec = durMs / 1000;
+          // Inyectamos la duración en el Blob como propiedad runtime
+          try {
+            (audioBlob as any).recordedDuration = durSec;
+          } catch {
+            // en caso de error, no importa, seguimos sin la propiedad
+          }
+        }
+        // Enviamos el Blob (con posible propiedad recordedDuration)
         onEnviar(audioBlob);
+        // Liberamos el stream
         stream.getTracks().forEach(track => track.stop());
+        recordStartTimeRef.current = null;
       };
 
       mediaRecorder.start();
@@ -45,7 +64,9 @@ export default function InputMensaje({ onEnviar }: Props) {
   };
 
   const detenerGrabacion = () => {
-    mediaRecorderRef.current?.stop();
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+    }
   };
 
   return (
