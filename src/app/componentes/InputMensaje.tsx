@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { FaMicrophone, FaPaperPlane } from 'react-icons/fa';
+import { FaPaperPlane } from "react-icons/fa6";
+import { BiSolidMicrophone } from "react-icons/bi";
 
 type Props = {
   onEnviar: (mensaje: string | Blob) => void;
@@ -72,7 +73,7 @@ export default function InputMensaje({ onEnviar }: Props) {
           onTouchEnd={detenerGrabacion}
           className="p-2 bg-gray-200 rounded-full hover:bg-gray-300"
         >
-          <FaMicrophone />
+          <BiSolidMicrophone />
         </button>
       )}
     </div>
