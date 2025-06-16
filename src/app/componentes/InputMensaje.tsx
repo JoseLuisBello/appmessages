@@ -48,7 +48,7 @@ export default function InputMensaje({ onEnviar }: Props) {
   };
 
   return (
-    <div className="flex items-center gap-2 p-2 bg-white shadow-inner">
+    <div className="flex items-center gap-2 p-2 bg-white text-black shadow-inner">
       <input
         type="text"
         value={mensaje}
