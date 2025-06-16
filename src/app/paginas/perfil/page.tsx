@@ -1,6 +1,7 @@
 // app/profile/page.tsx
 "use client";
 
+import LanguageSelector from "@/app/componentes/languageSelector";
 import Image from "next/image";
 
 type Message = {
@@ -11,12 +12,6 @@ type Message = {
 };
 
 export default function ProfilePage() {
-  const messages: Message[] = [
-    { id: 1, sender: "johndoe", text: "Hey, ¿cómo estás?", time: "2h" },
-    { id: 2, sender: "johndoe", text: "¿Vas a la fiesta?", time: "1h" },
-    { id: 3, sender: "tú", text: "¡Claro que sí!", time: "50min" },
-  ];
-
   return (
     <div className="max-w-2xl mx-auto p-4">
       {/* Portada */}
@@ -44,11 +39,7 @@ export default function ProfilePage() {
         <p className="text-center text-gray-700 mt-2 px-4">
             Piloto F1 for Cadillac of 2026
         </p>
-        <p className="text-sm text-gray-500 mt-1">📍 Ciudad de Guadalajara</p>
-        <div className="flex gap-4 text-sm text-gray-600 mt-2">
-          <span><strong>1,245</strong> seguidores</span>
-          <span><strong>300</strong> seguidos</span>
-        </div>
+        <LanguageSelector />
       </div>
 
       {/* Línea divisoria */}
@@ -71,3 +62,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+
