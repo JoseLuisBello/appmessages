@@ -10,7 +10,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
-    /* e.preventDefault();
+    e.preventDefault();
     setError('');
 
     try {
@@ -27,11 +27,10 @@ export default function LoginPage() {
       }
 
       localStorage.setItem('user', JSON.stringify(data));
-      router.push('/chats');
+      router.push('paginas/chats');
     } catch {
       setError('Fallo al conectar con el servidor');
-    } */
-      router.push('/paginas/chats');
+    }
   };
 
   return (
