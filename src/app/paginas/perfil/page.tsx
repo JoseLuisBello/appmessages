@@ -26,24 +26,24 @@ export default function ProfilePage() {
       </div>
 
       {/* Perfil */}
-      <div className="relative flex flex-col items-center -mt-20">
+      <div className="relative flex flex-col items-center -mt-40">
         <img
           src="https://sportsbase.io/images/gpfans/copy_1200x800/e903738698e97ed4ddf742248018f4a64049a703.jpg"
           alt="Foto de perfil"
-          width={120}
-          height={120}
-          className="rounded-full border-4 border-white shadow-md"
+          width={500}
+          height={500}
+          className="rounded-full border-1 border-white shadow-md"
         />
-        <h1 className="text-2xl font-bold mt-3">Sergio Michel Pérez Mendoza</h1>
-        <p className="text-gray-500 text-sm">@Sergio</p>
-        <p className="text-center text-gray-700 mt-2 px-4">
+        <h1 className="text-3xl font-bold mt-3">Sergio Michel Pérez Mendoza</h1>
+        <p className="text-2xl text-gray-500 text-sm">@Sergio</p>
+        <p className="text-2xl text-center text-gray-700 mt-2 px-4">
             Piloto F1 for Cadillac of 2026
         </p>
         <LanguageSelector />
       </div>
 
       {/* Línea divisoria */}
-      <hr className="my-6 border-gray-300" />
+      <hr className="my-10 border-gray-300" />
 
       {/* <div>
         <h2 className="text-lg font-semibold mb-4">Mensajes recientes</h2>
