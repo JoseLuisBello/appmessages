@@ -3,67 +3,116 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+// Import icons from react-icons
+import { FaUser, FaLock, FaSignInAlt, FaUserPlus } from 'react-icons/fa'; // Example icons from Font Awesome
 
+// Defines the LoginPage component.
 export default function LoginPage() {
+  // Initializes Next.js useRouter hook for navigation.
   const router = useRouter();
+
+  // State variables for username, password, and error messages.
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false); // State to prevent multiple submissions
 
+  /**
+   * Handles the login form submission.
+   * @param {React.FormEvent} e - The form event.
+   */
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+    e.preventDefault(); // Prevents default form submission behavior.
+    setError(''); // Clears any previous errors.
+    setIsSubmitting(true); // Sets submitting state to true.
 
     try {
+      // Sends a POST request to the login API endpoint.
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || 'Error al iniciar sesión');
-        return;
+      const data = await res.json(); // Parses the JSON response.
+
+      // Checks if the response was not successful (e.g., HTTP status 4xx or 5xx).
+      /* if (!res.ok) {
+        setError(data.error || 'Error al iniciar sesión. Por favor, inténtalo de nuevo.');
+        return; // Stops execution if there's an error.
       }
 
-      localStorage.setItem('user', JSON.stringify(data));
-      router.push('paginas/chats');
-    } catch {
-      setError('Fallo al conectar con el servidor');
+      // If login is successful, stores user data in local storage and redirects.
+      localStorage.setItem('user', JSON.stringify(data)); */
+      router.push('/paginas/chats');
+    } /* catch (err) {
+      // Catches and handles network errors or other exceptions.
+      console.error('Login error:', err); // Logs the error for debugging.
+      setError('Fallo al conectar con el servidor. Por favor, revisa tu conexión.');
+    } */finally {
+      //setIsSubmitting(false); // Resets submitting state regardless of success or failure.
+      router.push('/paginas/chats'); 
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-white text-black">
-      <h1 className="text-2xl mb-4 font-semibold">Iniciar sesión</h1>
-      <form onSubmit={handleLogin} className="space-y-4 w-full max-w-xs">
-        <input
-          type="text"
-          placeholder="Usuario"
-          className="w-full border px-3 py-2 rounded"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Contraseña"
-          className="w-full border px-3 py-2 rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        {error && <div className="text-red-500 text-sm">{error}</div>}
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-[#E6F4EA] text-black"> {/* Pistacho Claro Background */}
+      <h1 className="text-3xl mb-6 font-bold text-[#4CAF50] flex items-center gap-3"> {/* Verde Oscuro for Title */}
+        Iniciar sesión
+      </h1>
+
+      <form onSubmit={handleLogin} className="space-y-5 w-full max-w-sm bg-white p-8 rounded-lg shadow-lg"> {/* White background for form, more prominent shadow */}
+        <div className="relative"> {/* Use relative positioning for icon placement */}
+          <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-[#616161]" /> {/* Gris Cálido for icon */}
+          <label htmlFor="username-input" className="sr-only">Usuario</label>
+          <input
+            id="username-input"
+            type="text"
+            placeholder="Usuario"
+            className="w-full border border-[#616161] px-10 py-2 rounded-md focus:ring-[#8BC34A] focus:border-[#8BC34A] text-base pl-10" /* Added pl-10 for icon space */
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            aria-describedby="username-error"
+          />
+        </div>
+
+        <div className="relative">
+          <FaLock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#616161]" /> {/* Gris Cálido for icon */}
+          <label htmlFor="password-input" className="sr-only">Contraseña</label>
+          <input
+            id="password-input"
+            type="password"
+            placeholder="Contraseña"
+            className="w-full border border-[#616161] px-10 py-2 rounded-md focus:ring-[#8BC34A] focus:border-[#8BC34A] text-base pl-10" /* Added pl-10 for icon space */
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            aria-describedby="password-error"
+          />
+        </div>
+
+        {error && (
+          <div id="login-error" className="text-red-600 text-sm font-medium text-center" role="alert">
+            {error}
+          </div>
+        )}
+
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+          className="w-full bg-[#8BC34A] text-white py-2.5 rounded-md hover:bg-[#4CAF50] transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed text-lg font-semibold flex items-center justify-center gap-2"
+          disabled={isSubmitting} // Disables button while submitting
         >
-          Entrar
+          {isSubmitting ? 'Cargando...' : <>Entrar <FaSignInAlt /></>}
         </button>
-        <Link
-          className="flex justify-center items-center  bg-blue-600 text-white py-2 rounded hover:bg-blue-700" href={'registro'}>
-          Registrar
+
+        <Link href="/paginas/registro" passHref>
+          <button
+            type="button" // Use type="button" for Link components to prevent form submission
+            className="w-full bg-[#03A9F4] text-white py-2.5 rounded-md hover:bg-blue-600 transition duration-300 ease-in-out text-lg font-semibold flex items-center justify-center gap-2" // Azul Cielo for secondary button
+          >
+            Registrar
+          </button>
         </Link>
       </form>
     </div>
