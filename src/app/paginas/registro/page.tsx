@@ -29,7 +29,7 @@ export default function RegisterPage() {
 
     try {
       // Sends a POST request to the registration API endpoint.
-      const res = await fetch('/api/register', {
+      const res = await fetch('/api/registro', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, email }),
