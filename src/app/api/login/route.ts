@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
     const { username, password } = await req.json();
 
     const [rows]: any = await pool.query(
-      'SELECT id FROM usuarios WHERE nombre = ? AND contrasena = ?',
+      'SELECT id_usuario FROM usuarios WHERE nombre = ? AND contrasena = ?',
       [username, password]
     );
 
