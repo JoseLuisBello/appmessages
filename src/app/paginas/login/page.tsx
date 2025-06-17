@@ -42,6 +42,9 @@ export default function LoginPage() {
     });
 
     const data = await res.json();
+    console.log("ID recuperado:", data.id);
+
+
 
     if (!res.ok) {
       // Si hay error de autenticación
