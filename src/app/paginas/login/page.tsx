@@ -22,38 +22,44 @@ export default function LoginPage() {
    * @param {React.FormEvent} e - The form event.
    */
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault(); // Prevents default form submission behavior.
-    setError(''); // Clears any previous errors.
-    setIsSubmitting(true); // Sets submitting state to true.
+  e.preventDefault(); // Previene el comportamiento por defecto del formulario
+  setError(''); // Limpia errores anteriores
 
-    try {
-      // Sends a POST request to the login API endpoint.
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
+  // Validación básica de campos vacíos
+  if (!username || !password) {
+    setError('Por favor, ingresa tu usuario y contraseña.');
+    return;
+  }
 
-      const data = await res.json(); // Parses the JSON response.
+  setIsSubmitting(true); // Muestra que está enviando
 
-      // Checks if the response was not successful (e.g., HTTP status 4xx or 5xx).
-      /* if (!res.ok) {
-        setError(data.error || 'Error al iniciar sesión. Por favor, inténtalo de nuevo.');
-        return; // Stops execution if there's an error.
-      }
+  try {
+    // Realiza la petición al backend
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
 
-      // If login is successful, stores user data in local storage and redirects.
-      localStorage.setItem('user', JSON.stringify(data)); */
-      router.push('/paginas/chats');
-    } /* catch (err) {
-      // Catches and handles network errors or other exceptions.
-      console.error('Login error:', err); // Logs the error for debugging.
-      setError('Fallo al conectar con el servidor. Por favor, revisa tu conexión.');
-    } */finally {
-      //setIsSubmitting(false); // Resets submitting state regardless of success or failure.
-      router.push('/paginas/chats'); 
+    const data = await res.json();
+
+    if (!res.ok) {
+      // Si hay error de autenticación
+      setError(data.error || 'Error al iniciar sesión. Por favor, inténtalo de nuevo.');
+      return;
     }
-  };
+
+    // Login exitoso: guarda usuario y redirige
+    localStorage.setItem('user', JSON.stringify(data));
+    router.push(`/paginas/chats/${data.id}`); // Se asume que `data.id` es el ID de usuario o chat
+  } catch (err) {
+    console.error('Login error:', err);
+    setError('Fallo al conectar con el servidor. Por favor, revisa tu conexión.');
+  } finally {
+    setIsSubmitting(false); // Se ejecuta siempre, éxito o fallo
+  }
+};
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-[#E6F4EA] text-black"> {/* Pistacho Claro Background */}
