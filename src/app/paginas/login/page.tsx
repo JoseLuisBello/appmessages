@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -60,6 +61,10 @@ export default function LoginPage() {
         >
           Entrar
         </button>
+        <Link
+          className="flex justify-center items-center  bg-blue-600 text-white py-2 rounded hover:bg-blue-700" href={'registro'}>
+          Registrar
+        </Link>
       </form>
     </div>
   );
