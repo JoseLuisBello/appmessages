@@ -17,9 +17,7 @@ export async function POST(req: NextRequest) {
     const user = rows[0];
 
     return NextResponse.json({
-      id: user.id,
-      nombre: user.nombre,
-      rol: user.rol,
+      id: user.id_usuario,
     });
   } catch (error) {
     console.error('Error en login:', error);
