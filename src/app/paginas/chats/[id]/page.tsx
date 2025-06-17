@@ -1,150 +1,210 @@
 'use client';
 
-import { useState, useEffect } from 'react'; // Importa useEffect
-import { useRouter, useParams } from 'next/navigation'; // Importa useParams
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { IoPersonCircleOutline, IoExitOutline, IoChatbubblesOutline } from 'react-icons/io5';
 
-// Dummy chat data - In a real app, this would come from an API
-const chats = [
-  {id: 1,nombre: 'Profesor Mario',ultimoMensaje: 'Nos vemos mañana en clase. Recuerden traer los materiales para la práctica.',hora: '10:30',sinLeer: 2,},
-  {id: 2,nombre: 'Juan Pérez',ultimoMensaje: '¿Qué tareas dejó el profe? No pude asistir a la última clase.',hora: '9:45',sinLeer: 0,},
-  {id: 3,nombre: 'Grupo Matemáticas',ultimoMensaje: 'Adjunto la guía para la próxima semana, incluye los ejercicios 5 al 10.',hora: 'Ayer',sinLeer: 5,},
-  {id: 4,nombre: 'Ana López',ultimoMensaje: 'Confirmo mi asistencia a la reunión de hoy a las 3 PM. Estaré allí puntualmente.',hora: 'Ayer',sinLeer: 0,},
-  {id: 5,nombre: 'Soporte Técnico',ultimoMensaje: 'Su incidencia #1234 ha sido resuelta. Por favor, verifique y confirme el cierre.',hora: 'Lunes',sinLeer: 1,},
-];
+interface Chat {
+  id: number;
+  usuario_id: number;
+  contacto_id: number;
+  nombre_contacto: string;
+  ultimo_mensaje: string;
+  fecha_ultimo_mensaje: string;
+  sin_leer: number;
+}
 
 export default function ListaChats() {
   const [chatActivo, setChatActivo] = useState<number | null>(null);
-  const [nombreUsuario, setNombreUsuario] = useState<string | null>(null); // Nuevo estado para el nombre del usuario
+  const [nombreUsuario, setNombreUsuario] = useState<string | null>(null);
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const params = useParams(); // Hook para obtener los parámetros de la URL
-
-  // Obtener el ID de la URL. Asumimos que la ruta es, por ejemplo, /chats/[id]
+  const params = useParams();
   const userId = params.id as string | undefined;
 
-  // Efecto para cargar el nombre del usuario cuando el componente se monta o el userId cambia
+  // Efecto para cargar el nombre del usuario y sus chats
   useEffect(() => {
-    const fetchUserName = async () => {
-      // Si no hay un userId en la URL, no podemos buscar el nombre
+    const fetchUserData = async () => {
       if (!userId) {
-        console.warn("ID de usuario no encontrado en la URL. No se puede cargar el nombre.");
-        setNombreUsuario('Invitado'); // Valor por defecto si no hay ID
+        console.warn("ID de usuario no encontrado en la URL.");
+        setNombreUsuario('Invitado');
         return;
       }
 
       try {
-        // Realiza la llamada a tu API para obtener el nombre del usuario
-        const res = await fetch(`/api/recuperar/${userId}`, { cache: 'no-store' });
-
-        if (!res.ok) {
-          // Manejo de errores si la API no responde OK (ej. 404, 500)
-          const errorData = await res.json();
-          console.error(`Error al obtener el nombre del usuario (${res.status}): ${errorData.error || 'Error desconocido'}`);
-          setNombreUsuario('Usuario Desconocido'); // Nombre de respaldo en caso de error
-          return;
+        setLoading(true);
+        
+        // Cargar nombre del usuario
+        const userRes = await fetch(`/api/recuperar/${userId}`, { cache: 'no-store' });
+        if (!userRes.ok) {
+          throw new Error('Error al obtener datos del usuario');
         }
+        const userData = await userRes.json();
+        setNombreUsuario(userData?.nombre || 'Usuario Desconocido');
 
-        const data = await res.json();
-        if (data?.nombre) {
-          setNombreUsuario(data.nombre); // Actualiza el estado con el nombre recibido
-        } else {
-          setNombreUsuario('Nombre no disponible'); // Si la API no devuelve 'nombre'
+        // Cargar chats del usuario
+        const chatsRes = await fetch(`/api/chats/${userId}`);
+        if (!chatsRes.ok) {
+          throw new Error('Error al obtener los chats');
         }
-      } catch (error) {
-        // Manejo de errores de red o cualquier otro error en la llamada fetch
-        console.error("Error de conexión al obtener el nombre del usuario:", error);
-        setNombreUsuario('Error al cargar nombre'); // Nombre de respaldo en caso de fallo de red
+        const chatsData = await chatsRes.json();
+        
+        // Ordenar chats por fecha descendente
+        const sortedChats = chatsData.sort((a: Chat, b: Chat) => 
+          new Date(b.fecha_ultimo_mensaje).getTime() - new Date(a.fecha_ultimo_mensaje).getTime()
+        );
+        
+        setChats(sortedChats);
+      } catch (err) {
+        console.error("Error al cargar datos:", err);
+        setError(err instanceof Error ? err.message : 'Error desconocido');
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchUserName(); // Llama a la función para cargar el nombre
-  }, [userId]); // Este efecto se ejecutará cada vez que 'userId' cambie
+    fetchUserData();
+  }, [userId]);
 
-  // Function to navigate to the profile page
-  const irAlPerfil = () => {
-    // Puedes usar el userId aquí si tu página de perfil también es dinámica
-    router.push(`/paginas/perfil/${userId}`); // Ejemplo: /paginas/perfil/123
+  // Formatear la fecha para mostrar
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    
+    // Si es hoy, mostrar hora
+    if (date.toDateString() === now.toDateString()) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    
+    // Si es ayer
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (date.toDateString() === yesterday.toDateString()) {
+      return 'Ayer';
+    }
+    
+    // Si es esta semana
+    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays < 7) {
+      return date.toLocaleDateString([], { weekday: 'long' });
+    }
+    
+    // Más de una semana
+    return date.toLocaleDateString([], { day: 'numeric', month: 'short' });
   };
 
-  // Function to handle logout and redirect to login page
+  const irAlPerfil = () => {
+    router.push(`/paginas/perfil/${userId}`);
+  };
+
   const handleLogout = () => {
-    // Clear user session data (e.g., from localStorage)
-    localStorage.removeItem('user'); // Asegúrate de limpiar el ID si lo guardas aquí
-    // Redirect to the login page
+    localStorage.removeItem('user');
     router.push('/paginas/login');
   };
 
-  // Function to simulate starting a new chat
   const handleNewChat = () => {
-    alert('Funcionalidad para iniciar un nuevo chat (próximamente)');
-    // In a real application, this would redirect to a new chat creation page or open a modal.
+    router.push(`/paginas/nuevo-chat/${userId}`);
   };
 
+  const openChat = (chatId: number) => {
+    router.push(`/paginas/chat/${chatId}?usuario=${userId}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#E6F4EA] text-black">
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-[#4CAF50] text-lg">Cargando chats...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#E6F4EA] text-black">
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-red-600 text-lg">Error: {error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col bg-[#E6F4EA] text-black"> {/* Pistacho Claro Background */}
+    <div className="min-h-screen flex flex-col bg-[#E6F4EA] text-black">
       {/* Encabezado */}
       <div className="flex justify-between items-center p-4 bg-white shadow-sm sticky top-0 z-10">
-        <h1 className="text-3xl font-bold text-[#4CAF50]">Chats</h1> {/* Verde Oscuro for Title */}
+        <h1 className="text-3xl font-bold text-[#4CAF50]">Chats</h1>
         <button
           onClick={irAlPerfil}
           title="Ir al perfil"
-          className="flex items-center gap-2 text-[#616161] hover:text-[#4CAF50] transition-colors duration-200" // Gris Cálido and Verde Oscuro hover
+          className="flex items-center gap-2 text-[#616161] hover:text-[#4CAF50] transition-colors duration-200"
         >
-          <IoPersonCircleOutline size={32} /> {/* Slightly larger icon */}
-          <span className="text-base font-medium">{nombreUsuario ?? 'Cargando...'}</span> {/* Muestra el nombre del usuario */}
+          <IoPersonCircleOutline size={32} />
+          <span className="text-base font-medium">{nombreUsuario ?? 'Usuario'}</span>
         </button>
         <button
           onClick={handleLogout}
           title="Cerrar sesión"
-          className="flex items-center gap-2 text-[#EF5350] hover:text-[#D32F2F] font-semibold py-2 px-4 rounded-full transition-colors duration-200" // Rojo no tan fuerte
+          className="flex items-center gap-2 text-[#EF5350] hover:text-[#D32F2F] font-semibold py-2 px-4 rounded-full transition-colors duration-200"
         >
           <IoExitOutline size={24} />
           Salir
         </button>
       </div>
 
-      {/* Lista de chats - Scrollable area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3"> {/* Added flex-1 and space-y-3 for better spacing */}
+      {/* Lista de chats */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {chats.length > 0 ? (
           chats.map((chat) => (
             <div
               key={chat.id}
-              onClick={() => setChatActivo(chat.id)}
+              onClick={() => openChat(chat.id)}
               className={`p-4 rounded-xl shadow-md cursor-pointer flex flex-col transition-all duration-200 ease-in-out
                 ${chatActivo === chat.id ? 'bg-[#D4EDDA] border-l-4 border-[#8BC34A]' : 'bg-white hover:bg-gray-50'}
               `}
             >
               <div className="flex justify-between items-center mb-1">
-                <h2 className="font-semibold text-lg text-[#4CAF50]">{chat.nombre}</h2> {/* Verde Oscuro for chat names */}
-                <span className="text-sm text-[#616161]">{chat.hora}</span> {/* Gris Cálido for time */}
+                <h2 className="font-semibold text-lg text-[#4CAF50]">{chat.nombre_contacto}</h2>
+                <span className="text-sm text-[#616161]">{formatDate(chat.fecha_ultimo_mensaje)}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <p className="text-[#616161] truncate pr-4 max-w-[85%]">{chat.ultimoMensaje}</p> {/* Gris Cálido, truncate, max-w */}
-                {chat.sinLeer > 0 && (
+                <p className="text-[#616161] truncate pr-4 max-w-[85%]">{chat.ultimo_mensaje}</p>
+                {chat.sin_leer > 0 && (
                   <span className="ml-2 text-xs bg-[#8BC34A] text-white rounded-full px-2 py-0.5 font-bold min-w-[24px] text-center">
-                    {chat.sinLeer}
-                  </span> // Verde Suave for unread count
+                    {chat.sin_leer}
+                  </span>
                 )}
               </div>
             </div>
           ))
         ) : (
-          <p className="text-center text-gray-500 mt-10">No hay chats disponibles.</p>
+          <div className="flex flex-col items-center justify-center h-full mt-10">
+            <p className="text-center text-gray-500 mb-4">No tienes chats aún</p>
+            <button
+              onClick={handleNewChat}
+              className="bg-[#03A9F4] text-white py-2 px-6 rounded-md hover:bg-blue-600 transition-colors duration-200"
+            >
+              Iniciar un nuevo chat
+            </button>
+          </div>
         )}
       </div>
 
-      {/* Footer con botones de acción */}
-      <div className="p-4 bg-white shadow-lg flex justify-end items-center sticky bottom-0 z-10">
-
-        {/* Botón de Nuevo Mensaje */}
-        <button
-          onClick={handleNewChat}
-          title="Nuevo mensaje"
-          className="bg-[#03A9F4] text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center" // Azul Cielo
-        >
-          <IoChatbubblesOutline size={28} /> {/* Larger icon for floating action button */}
-        </button>
-      </div>
+      {/* Botón flotante para nuevo chat */}
+      {chats.length > 0 && (
+        <div className="p-4 bg-white shadow-lg flex justify-end items-center sticky bottom-0 z-10">
+          <button
+            onClick={handleNewChat}
+            title="Nuevo mensaje"
+            className="bg-[#03A9F4] text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center"
+          >
+            <IoChatbubblesOutline size={28} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
