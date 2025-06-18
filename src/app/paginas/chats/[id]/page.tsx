@@ -45,7 +45,7 @@ export default function ListaChats() {
         setNombreUsuario(userData?.nombre || 'Usuario Desconocido');
 
         // Cargar chats del usuario
-        const chatsRes = await fetch(`/api/chats/${userId}`);
+        const chatsRes = await fetch(`/api/chats/${userId}`, {cache : 'no-store'});
         if (!chatsRes.ok) {
           throw new Error('Error al obtener los chats');
         }
