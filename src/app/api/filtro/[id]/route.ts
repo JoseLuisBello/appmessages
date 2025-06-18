@@ -1,7 +1,7 @@
 import pool from '@/app/database';
 import { NextResponse } from 'next/server';
 
-export async function GET(_request: Request,{ params }: { params: { id: string } }) {
+export async function GET(_request: Request, { params }: { params: { id: string } }) {
   const id = Number(params.id);
 
   if (isNaN(id)) {
@@ -10,11 +10,19 @@ export async function GET(_request: Request,{ params }: { params: { id: string }
 
   try {
     const [rows]: any = await pool.query(
-      'SELECT id_usuario FROM usuarios WHERE id_usuario != ?',
-      [id]
+      `SELECT u.id_usuario, u.nombre
+       FROM usuarios u
+       WHERE u.id_usuario != ?
+       AND NOT EXISTS (
+           SELECT 1
+           FROM chat c
+           WHERE (c.user1 = ? AND c.user2 = u.id_usuario)
+              OR (c.user2 = ? AND c.user1 = u.id_usuario)
+       )`,
+      [id, id, id] // Pasa el ID del usuario actual tres veces para los placeholders
     );
 
-    // Si no hay otros usuarios, puedes retornar lista vacía sin error
+    // Si no hay otros usuarios sin un chat existente, se retorna una lista vacía sin error
     return NextResponse.json(rows);
   } catch (error: any) {
     console.error('Error en la consulta:', error);
