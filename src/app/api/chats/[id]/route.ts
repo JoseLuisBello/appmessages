@@ -1,3 +1,4 @@
+// src/app/api/chats/[id]/route.ts
 import pool from '@/app/database';
 import { NextResponse } from 'next/server';
 
@@ -10,38 +11,24 @@ export async function GET(_request: Request, { params }: { params: { id: string 
 
   try {
     const [rows]: any = await pool.query(
-      `
-      SELECT 
-        c.id,
-        CASE
-          WHEN c.user1 = ? THEN c.user1
-          ELSE c.user2
-        END AS usuario_id,
-        CASE
-          WHEN c.user1 = ? THEN c.user2
-          ELSE c.user1
-        END AS contacto_id,
-        u.nombre AS nombre_contacto,
-        c.ultimo_mensaje,
-        c.fecha_ultimo_mensaje,
-        c.sin_leer
-      FROM chat c
-      JOIN usuarios u ON u.id = 
-        CASE 
-          WHEN c.user1 = ? THEN c.user2
-          ELSE c.user1
-        END
-      WHERE c.user1 = ? OR c.user2 = ?
-      ORDER BY c.fecha_ultimo_mensaje DESC
-      `,
-      [id, id, id, id, id]
+      `SELECT 
+        id, 
+        user1 AS usuario_id, 
+        user2 AS contacto_id, 
+        nombre_contacto, 
+        ultimo_mensaje, 
+        fecha_ultimo_mensaje, 
+        sin_leer
+      FROM chat 
+      WHERE user1 = ?`, 
+      [id]
     );
 
     if (!rows.length) {
-      return NextResponse.json({ error: 'No existen chats' }, { status: 404 });
+      return NextResponse.json([], { status: 200 }); // ← devolver array vacío en lugar de error
     }
 
-    return NextResponse.json(rows);
+    return NextResponse.json(rows); // ← se espera un array
   } catch (error: any) {
     console.error('Error en la consulta:', error);
     return NextResponse.json(
