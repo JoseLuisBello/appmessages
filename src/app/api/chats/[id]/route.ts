@@ -12,7 +12,7 @@ export async function GET(_request: Request, { params }: { params: { id: string 
     // Solo obtener chats donde user1 = id (usuario logueado)
     // y traer nombre del usuario2
     const [rows]: any = await pool.query(
-      `SELECT c.id, c.user1, c.user2, u.nombre AS nombre_contacto
+      `SELECT c.id, c.user1, c.user2
        FROM chat c
        LEFT JOIN usuarios u ON u.id_usuario = c.user2
        WHERE c.user1 = ?`,
