@@ -70,7 +70,6 @@ export default function ListaChats() {
     router.push(`/paginas/chat/${chatId}?usuario=${userId}`);
   };
 
-  if (loading) return <p>Cargando chats...</p>;
   if (error) return <p>Error: {error}</p>;
 
   return (

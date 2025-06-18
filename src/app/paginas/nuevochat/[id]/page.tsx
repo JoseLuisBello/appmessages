@@ -83,8 +83,6 @@ export default function NuevoChat() {
     }
   };
 
-
-  if (loading) return <p className="text-center mt-10 text-xl">Cargando usuarios...</p>;
   if (error) return <p className="text-center mt-10 text-red-600 font-semibold">Error: {error}</p>;
 
   return (
