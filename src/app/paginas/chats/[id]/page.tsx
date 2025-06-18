@@ -8,10 +8,7 @@ interface Chat {
   id: number;
   usuario_id: number;
   contacto_id: number;
-  nombre_contacto: string;
-  ultimo_mensaje: string;
-  fecha_ultimo_mensaje: string;
-  sin_leer: number;
+  // nombre_contacto no disponible aún, usar contacto_id como placeholder
 }
 
 export default function ListaChats() {
@@ -29,30 +26,29 @@ export default function ListaChats() {
       if (!userId) {
         console.warn("ID de usuario no encontrado en la URL.");
         setNombreUsuario('Invitado');
+        setLoading(false);
         return;
       }
 
       try {
         setLoading(true);
-
-        const userRes = await fetch(`/api/recuperar/${userId}`, { cache: 'no-store' });
+        
+        // Obtener nombre del usuario logeado
+        const userRes = await fetch(`/api/consulta/${userId}`, { cache: 'no-store' });
         if (!userRes.ok) {
           throw new Error('Error al obtener datos del usuario');
         }
         const userData = await userRes.json();
         setNombreUsuario(userData?.nombre || 'Usuario Desconocido');
 
+        // Obtener lista de chats
         const chatsRes = await fetch(`/api/chats/${userId}`, { cache: 'no-store' });
         if (!chatsRes.ok) {
           throw new Error('Error al obtener los chats');
         }
         const chatsData = await chatsRes.json();
 
-        const sortedChats = chatsData.sort((a: Chat, b: Chat) =>
-          new Date(b.fecha_ultimo_mensaje).getTime() - new Date(a.fecha_ultimo_mensaje).getTime()
-        );
-
-        setChats(sortedChats);
+        setChats(chatsData);
       } catch (err) {
         console.error("Error al cargar datos:", err);
         setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -63,28 +59,6 @@ export default function ListaChats() {
 
     fetchUserData();
   }, [userId]);
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-
-    if (date.toDateString() === now.toDateString()) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    if (date.toDateString() === yesterday.toDateString()) {
-      return 'Ayer';
-    }
-
-    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    if (diffDays < 7) {
-      return date.toLocaleDateString([], { weekday: 'long' });
-    }
-
-    return date.toLocaleDateString([], { day: 'numeric', month: 'short' });
-  };
 
   const irAlPerfil = () => {
     router.push(`/paginas/perfil/${userId}`);
@@ -130,6 +104,7 @@ export default function ListaChats() {
         <h1 className="text-3xl font-bold text-[#4CAF50]">Chats</h1>
         <button
           onClick={irAlPerfil}
+          title="Ir al perfil"
           className="flex items-center gap-2 text-[#616161] hover:text-[#4CAF50] transition-colors duration-200"
         >
           <IoPersonCircleOutline size={32} />
@@ -137,6 +112,7 @@ export default function ListaChats() {
         </button>
         <button
           onClick={handleLogout}
+          title="Cerrar sesión"
           className="flex items-center gap-2 text-[#EF5350] hover:text-[#D32F2F] font-semibold py-2 px-4 rounded-full transition-colors duration-200"
         >
           <IoExitOutline size={24} />
@@ -156,17 +132,10 @@ export default function ListaChats() {
               `}
             >
               <div className="flex justify-between items-center mb-1">
-                <h2 className="font-semibold text-lg text-[#4CAF50]">{chat.nombre_contacto}</h2>
-                <span className="text-sm text-[#616161]">{formatDate(chat.fecha_ultimo_mensaje)}</span>
+                {/* Por ahora mostramos contacto_id en lugar del nombre */}
+                <h2 className="font-semibold text-lg text-[#4CAF50]">{chat.contacto_id}</h2>
               </div>
-              <div className="flex justify-between items-center text-sm">
-                <p className="text-[#616161] truncate pr-4 max-w-[85%]">{chat.ultimo_mensaje}</p>
-                {chat.sin_leer > 0 && (
-                  <span className="ml-2 text-xs bg-[#8BC34A] text-white rounded-full px-2 py-0.5 font-bold min-w-[24px] text-center">
-                    {chat.sin_leer}
-                  </span>
-                )}
-              </div>
+              {/* Sin último mensaje ni sin_leer disponibles */}
             </div>
           ))
         ) : (
@@ -187,6 +156,7 @@ export default function ListaChats() {
         <div className="p-4 bg-white shadow-lg flex justify-end items-center sticky bottom-0 z-10">
           <button
             onClick={handleNewChat}
+            title="Nuevo mensaje"
             className="bg-[#03A9F4] text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center"
           >
             <IoChatbubblesOutline size={28} />

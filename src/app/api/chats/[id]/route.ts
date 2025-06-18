@@ -14,17 +14,17 @@ export async function GET(_request: Request, { params }: { params: { id: string 
       `SELECT 
         id, 
         user1 AS usuario_id, 
-        user2 AS contacto_id, 
+        user2 AS contacto_id
       FROM chat 
       WHERE user1 = ?`, 
       [id]
     );
 
     if (!rows.length) {
-      return NextResponse.json([], { status: 200 }); // ← devolver array vacío en lugar de error
+      return NextResponse.json([], { status: 200 }); // devolver array vacío si no hay chats
     }
 
-    return NextResponse.json(rows); // ← se espera un array
+    return NextResponse.json(rows);
   } catch (error: any) {
     console.error('Error en la consulta:', error);
     return NextResponse.json(
