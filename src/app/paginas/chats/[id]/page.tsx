@@ -24,7 +24,6 @@ export default function ListaChats() {
   const params = useParams();
   const userId = params.id as string | undefined;
 
-  // Efecto para cargar el nombre del usuario y sus chats
   useEffect(() => {
     const fetchUserData = async () => {
       if (!userId) {
@@ -35,8 +34,7 @@ export default function ListaChats() {
 
       try {
         setLoading(true);
-        
-        // Cargar nombre del usuario
+
         const userRes = await fetch(`/api/recuperar/${userId}`, { cache: 'no-store' });
         if (!userRes.ok) {
           throw new Error('Error al obtener datos del usuario');
@@ -44,18 +42,16 @@ export default function ListaChats() {
         const userData = await userRes.json();
         setNombreUsuario(userData?.nombre || 'Usuario Desconocido');
 
-        // Cargar chats del usuario
-        const chatsRes = await fetch(`/api/chats/${userId}`, {cache : 'no-store'});
+        const chatsRes = await fetch(`/api/chats/${userId}`, { cache: 'no-store' });
         if (!chatsRes.ok) {
           throw new Error('Error al obtener los chats');
         }
         const chatsData = await chatsRes.json();
-        
-        // Ordenar chats por fecha descendente
-        const sortedChats = chatsData.sort((a: Chat, b: Chat) => 
+
+        const sortedChats = chatsData.sort((a: Chat, b: Chat) =>
           new Date(b.fecha_ultimo_mensaje).getTime() - new Date(a.fecha_ultimo_mensaje).getTime()
         );
-        
+
         setChats(sortedChats);
       } catch (err) {
         console.error("Error al cargar datos:", err);
@@ -68,30 +64,25 @@ export default function ListaChats() {
     fetchUserData();
   }, [userId]);
 
-  // Formatear la fecha para mostrar
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    
-    // Si es hoy, mostrar hora
+
     if (date.toDateString() === now.toDateString()) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
-    
-    // Si es ayer
+
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
     if (date.toDateString() === yesterday.toDateString()) {
       return 'Ayer';
     }
-    
-    // Si es esta semana
+
     const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
     if (diffDays < 7) {
       return date.toLocaleDateString([], { weekday: 'long' });
     }
-    
-    // Más de una semana
+
     return date.toLocaleDateString([], { day: 'numeric', month: 'short' });
   };
 
@@ -139,7 +130,6 @@ export default function ListaChats() {
         <h1 className="text-3xl font-bold text-[#4CAF50]">Chats</h1>
         <button
           onClick={irAlPerfil}
-          title="Ir al perfil"
           className="flex items-center gap-2 text-[#616161] hover:text-[#4CAF50] transition-colors duration-200"
         >
           <IoPersonCircleOutline size={32} />
@@ -147,7 +137,6 @@ export default function ListaChats() {
         </button>
         <button
           onClick={handleLogout}
-          title="Cerrar sesión"
           className="flex items-center gap-2 text-[#EF5350] hover:text-[#D32F2F] font-semibold py-2 px-4 rounded-full transition-colors duration-200"
         >
           <IoExitOutline size={24} />
@@ -198,7 +187,6 @@ export default function ListaChats() {
         <div className="p-4 bg-white shadow-lg flex justify-end items-center sticky bottom-0 z-10">
           <button
             onClick={handleNewChat}
-            title="Nuevo mensaje"
             className="bg-[#03A9F4] text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center"
           >
             <IoChatbubblesOutline size={28} />
