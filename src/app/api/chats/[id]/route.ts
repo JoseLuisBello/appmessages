@@ -1,4 +1,3 @@
-// src/app/api/chats/[id]/route.ts
 import pool from '@/app/database';
 import { NextResponse } from 'next/server';
 
@@ -10,19 +9,15 @@ export async function GET(_request: Request, { params }: { params: { id: string 
   }
 
   try {
+    // Solo obtener chats donde user1 = id (usuario logueado)
+    // y traer nombre del usuario2
     const [rows]: any = await pool.query(
-      `SELECT 
-        id, 
-        user1 AS usuario_id, 
-        user2 AS contacto_id
-      FROM chat 
-      WHERE user1 = ?`, 
+      `SELECT c.id, c.user1, c.user2, u.nombre AS nombre_contacto
+       FROM chat c
+       LEFT JOIN usuarios u ON u.id_usuario = c.user2
+       WHERE c.user1 = ?`,
       [id]
     );
-
-    if (!rows.length) {
-      return NextResponse.json([], { status: 200 }); // devolver array vacío si no hay chats
-    }
 
     return NextResponse.json(rows);
   } catch (error: any) {

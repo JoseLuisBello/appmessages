@@ -6,58 +6,51 @@ import { IoPersonCircleOutline, IoExitOutline, IoChatbubblesOutline } from 'reac
 
 interface Chat {
   id: number;
-  usuario_id: number;
-  contacto_id: number;
-  // nombre_contacto no disponible aún, usar contacto_id como placeholder
+  user1: number;
+  user2: number;
+  nombre_contacto: string;
 }
 
 export default function ListaChats() {
-  const [chatActivo, setChatActivo] = useState<number | null>(null);
   const [nombreUsuario, setNombreUsuario] = useState<string | null>(null);
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const router = useRouter();
   const params = useParams();
   const userId = params.id as string | undefined;
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (!userId) {
-        console.warn("ID de usuario no encontrado en la URL.");
-        setNombreUsuario('Invitado');
-        setLoading(false);
-        return;
-      }
+    if (!userId) {
+      setError('No se encontró el ID de usuario en la URL');
+      setLoading(false);
+      return;
+    }
 
+    const fetchData = async () => {
       try {
         setLoading(true);
-        
-        // Obtener nombre del usuario logeado
+        // Obtener nombre del usuario
         const userRes = await fetch(`/api/consulta/${userId}`, { cache: 'no-store' });
-        if (!userRes.ok) {
-          throw new Error('Error al obtener datos del usuario');
-        }
+        if (!userRes.ok) throw new Error('Error al obtener datos del usuario');
         const userData = await userRes.json();
-        setNombreUsuario(userData?.nombre || 'Usuario Desconocido');
+        setNombreUsuario(userData?.nombre ?? 'Usuario');
 
-        // Obtener lista de chats
+        // Obtener chats
         const chatsRes = await fetch(`/api/chats/${userId}`, { cache: 'no-store' });
-        if (!chatsRes.ok) {
-          throw new Error('Error al obtener los chats');
-        }
-        const chatsData = await chatsRes.json();
+        if (!chatsRes.ok) throw new Error('Error al obtener los chats');
+        const chatsData: Chat[] = await chatsRes.json();
 
         setChats(chatsData);
       } catch (err) {
-        console.error("Error al cargar datos:", err);
         setError(err instanceof Error ? err.message : 'Error desconocido');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserData();
+    fetchData();
   }, [userId]);
 
   const irAlPerfil = () => {
@@ -77,43 +70,22 @@ export default function ListaChats() {
     router.push(`/paginas/chat/${chatId}?usuario=${userId}`);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col bg-[#E6F4EA] text-black">
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-[#4CAF50] text-lg">Cargando chats...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex flex-col bg-[#E6F4EA] text-black">
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-red-600 text-lg">Error: {error}</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <p>Cargando chats...</p>;
+  if (error) return <p>Error: {error}</p>;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#E6F4EA] text-black">
-      {/* Encabezado */}
+      {/* Header */}
       <div className="flex justify-between items-center p-4 bg-white shadow-sm sticky top-0 z-10">
         <h1 className="text-3xl font-bold text-[#4CAF50]">Chats</h1>
-        <button
-          onClick={irAlPerfil}
-          title="Ir al perfil"
-          className="flex items-center gap-2 text-[#616161] hover:text-[#4CAF50] transition-colors duration-200"
-        >
+        <button onClick={irAlPerfil} title="Ir al perfil" className="flex items-center gap-2">
           <IoPersonCircleOutline size={32} />
-          <span className="text-base font-medium">{nombreUsuario ?? 'Usuario'}</span>
+          <span>{nombreUsuario}</span>
         </button>
         <button
           onClick={handleLogout}
           title="Cerrar sesión"
-          className="flex items-center gap-2 text-[#EF5350] hover:text-[#D32F2F] font-semibold py-2 px-4 rounded-full transition-colors duration-200"
+          className="flex items-center gap-2 text-red-600 font-semibold py-2 px-4 rounded-full"
         >
           <IoExitOutline size={24} />
           Salir
@@ -127,15 +99,10 @@ export default function ListaChats() {
             <div
               key={chat.id}
               onClick={() => openChat(chat.id)}
-              className={`p-4 rounded-xl shadow-md cursor-pointer flex flex-col transition-all duration-200 ease-in-out
-                ${chatActivo === chat.id ? 'bg-[#D4EDDA] border-l-4 border-[#8BC34A]' : 'bg-white hover:bg-gray-50'}
-              `}
+              className="p-4 rounded-xl shadow-md cursor-pointer bg-white hover:bg-gray-50"
             >
-              <div className="flex justify-between items-center mb-1">
-                {/* Por ahora mostramos contacto_id en lugar del nombre */}
-                <h2 className="font-semibold text-lg text-[#4CAF50]">{chat.contacto_id}</h2>
-              </div>
-              {/* Sin último mensaje ni sin_leer disponibles */}
+              <h2 className="font-semibold text-lg text-[#4CAF50]">{chat.nombre_contacto}</h2>
+              <p className="text-sm text-gray-600">Chat ID: {chat.id}</p>
             </div>
           ))
         ) : (
@@ -143,26 +110,13 @@ export default function ListaChats() {
             <p className="text-center text-gray-500 mb-4">No tienes chats aún</p>
             <button
               onClick={handleNewChat}
-              className="bg-[#03A9F4] text-white py-2 px-6 rounded-md hover:bg-blue-600 transition-colors duration-200"
+              className="bg-[#03A9F4] text-white py-2 px-6 rounded-md hover:bg-blue-600 transition-colors"
             >
               Iniciar un nuevo chat
             </button>
           </div>
         )}
       </div>
-
-      {/* Botón flotante para nuevo chat */}
-      {chats.length > 0 && (
-        <div className="p-4 bg-white shadow-lg flex justify-end items-center sticky bottom-0 z-10">
-          <button
-            onClick={handleNewChat}
-            title="Nuevo mensaje"
-            className="bg-[#03A9F4] text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center"
-          >
-            <IoChatbubblesOutline size={28} />
-          </button>
-        </div>
-      )}
     </div>
   );
 }
