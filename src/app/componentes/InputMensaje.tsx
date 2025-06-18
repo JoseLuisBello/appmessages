@@ -27,7 +27,6 @@ export default function InputMensaje({ onEnviar }: Props) {
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
-      // Guardamos inicio de grabación
       recordStartTimeRef.current = Date.now();
 
       mediaRecorder.ondataavailable = (e) => {
@@ -37,22 +36,22 @@ export default function InputMensaje({ onEnviar }: Props) {
       };
 
       mediaRecorder.onstop = () => {
-        // Aquí detenemos y procesamos Blob
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        // Calculamos duración aproximada en segundos
+
         if (recordStartTimeRef.current !== null) {
           const durMs = Date.now() - recordStartTimeRef.current;
           const durSec = durMs / 1000;
-          // Inyectamos la duración en el Blob como propiedad runtime
           try {
             (audioBlob as any).recordedDuration = durSec;
-          } catch {
-            // en caso de error, no importa, seguimos sin la propiedad
-          }
+          } catch {}
         }
-        // Enviamos el Blob (con posible propiedad recordedDuration)
+
+        // Enviar al componente
         onEnviar(audioBlob);
-        // Liberamos el stream
+
+        // 🔽 Enviar al backend para guardar
+        enviarAudioAlServidor(audioBlob);
+
         stream.getTracks().forEach(track => track.stop());
         recordStartTimeRef.current = null;
       };
@@ -66,6 +65,21 @@ export default function InputMensaje({ onEnviar }: Props) {
   const detenerGrabacion = () => {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
+    }
+  };
+
+  // Función para enviar el audio al servidor
+  const enviarAudioAlServidor = async (audioBlob: Blob) => {
+    const formData = new FormData();
+    formData.append('audio', audioBlob, `grabacion_${Date.now()}.webm`);
+
+    try {
+      await fetch('/api/guardar-audio', {
+        method: 'POST',
+        body: formData,
+      });
+    } catch (err) {
+      console.error('Error al guardar el audio en el servidor:', err);
     }
   };
 

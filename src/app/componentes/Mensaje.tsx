@@ -1,3 +1,4 @@
+//Mensaje.tsx
 import { useEffect, useState, useRef } from 'react';
 import { HiPlay, HiPause } from "react-icons/hi2";
 
