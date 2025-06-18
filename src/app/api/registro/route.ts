@@ -1,38 +1,53 @@
-// /app/api/agregar/route.ts
 import pool from '@/app/database';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { username, password, email,} = body;
+    const { username, password, email } = body; // Removed nacionalidad from destructuring as it's hardcoded
+
+    // Set default values for nacionalidad and descripcion
     const nacionalidad = 'mx';
     const descripcion = 'Usuario de meet the monkeys';
 
-    if (!username || !password || !email || !nacionalidad) {
-      return NextResponse.json({ error: 'Faltan datos' }, { status: 400 });
+    // Validate required fields
+    if (!username || !password || !email) { // Removed nacionalidad from validation
+      return NextResponse.json({ error: 'Faltan datos obligatorios: nombre de usuario, contraseña y correo electrónico.' }, { status: 400 });
     }
 
-    const [existing]: any = await pool.query(
-      'SELECT * FROM usuarios WHERE nombre = ?',
+    // Check if the username already exists
+    const [existingUsers]: any = await pool.query(
+      'SELECT id_usuario FROM usuarios WHERE nombre = ?',
       [username]
     );
-    if (existing.length > 0) {
-      return NextResponse.json({ error: 'El usuario ya existe' }, { status: 409 });
+
+    if (existingUsers.length > 0) {
+      return NextResponse.json({ error: 'El nombre de usuario ya existe. Por favor, elige otro.' }, { status: 409 });
     }
 
-    await pool.query(
+    // Insert the new user into the database
+    const [result]: any = await pool.query(
       'INSERT INTO usuarios (nombre, contrasena, correo, nacionalidad, descripcion) VALUES (?, ?, ?, ?, ?)',
       [username, password, email, nacionalidad, descripcion]
     );
 
+    // After a successful insert, the `insertId` property on the result object
+    // typically contains the ID of the newly inserted row.
+    const newUserId = result.insertId;
 
-    return NextResponse.json({ message: 'Usuario agregado correctamente' }, { status: 201 });
-  } catch (error: any) {
-    console.error('Error en la consulta:', error);
-    return NextResponse.json(
-      { error: 'Error en la consulta', details: error.message },
-      { status: 500 }
-    );
+    if (!newUserId) {
+      // This case should ideally not happen if the insert was successful
+      return NextResponse.json({ error: 'No se pudo obtener el ID del nuevo usuario.' }, { status: 500 });
+    }
+
+    // Return the ID of the newly created user
+    return NextResponse.json({
+      id_usuario: newUserId,
+      message: 'Usuario agregado exitosamente.'
+    }, { status: 201 }); // Use 201 Created status for successful resource creation
+
+  } catch (error) {
+    console.error('Error al agregar usuario:', error); // More specific error logging
+    return NextResponse.json({ error: 'Error interno del servidor al intentar agregar el usuario.' }, { status: 500 });
   }
 }

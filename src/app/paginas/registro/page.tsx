@@ -46,7 +46,7 @@ export default function RegisterPage() {
 
       // If registration is successful, stores user data in local storage and redirects to chats.
       localStorage.setItem('user', JSON.stringify(data));
-      router.push('/paginas/chats'); // Ensure this path is correct relative to your project structure
+      router.push(`/paginas/chats/${data.id_usuario}`); ; // Ensure this path is correct relative to your project structure
     } catch (error) {
       // Catches and handles network errors or other exceptions.
       console.error('Registration error:', error); // Logs the error for debugging.
