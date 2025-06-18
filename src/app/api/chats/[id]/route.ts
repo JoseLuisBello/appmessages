@@ -15,10 +15,6 @@ export async function GET(_request: Request, { params }: { params: { id: string 
         id, 
         user1 AS usuario_id, 
         user2 AS contacto_id, 
-        nombre_contacto, 
-        ultimo_mensaje, 
-        fecha_ultimo_mensaje, 
-        sin_leer
       FROM chat 
       WHERE user1 = ?`, 
       [id]
