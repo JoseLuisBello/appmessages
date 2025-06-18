@@ -1,7 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
 
-const LanguageSelector = () => {
+interface LanguageSelectorProps {
+  initialLangCode: string | null; // El idioma que viene de la base de datos
+  onLangChange: (newLangCode: string) => void; // Función para notificar al padre sobre el cambio
+}
+
+const LanguageSelector: React.FC<LanguageSelectorProps> = ({
+  initialLangCode,
+  onLangChange,
+}) => {
   const [currentLang, setCurrentLang] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -12,40 +20,46 @@ const LanguageSelector = () => {
     { code: "cn", name: "中國人", flag: "/flags/cn.png" },
   ];
 
-  // Cargar desde localStorage solo en cliente
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (initialLangCode) {
+      setCurrentLang(initialLangCode);
+    } else if (typeof window !== "undefined") {
       const saved = localStorage.getItem("lang");
       if (saved && languages.some((l) => l.code === saved)) {
         setCurrentLang(saved);
       } else {
         setCurrentLang("mx"); // valor por defecto
       }
+    } else {
+      setCurrentLang("mx"); // valor por defecto para SSR
     }
-  }, []);
+  }, [initialLangCode]);
 
   const handleLangChange = (code: string) => {
     setCurrentLang(code);
     if (typeof window !== "undefined") {
-      localStorage.setItem("lang", code);
+      localStorage.setItem("lang", code); // Opcional: mantener también en localStorage
     }
+    // ESTA ES LA PARTE CRÍTICA: Notifica al componente padre sobre el cambio
+    onLangChange(code);
     setOpen(false);
   };
 
-  if (!currentLang) return null; // evitar renderizado si aún no se ha cargado
+  if (!currentLang) return null;
 
   const selected = languages.find((lang) => lang.code === currentLang);
 
   return (
-    <div className="relative inline-block text-left">
+    <div className="relative inline-block text-left mt-4">
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 text-sm text-gray-700"
       >
-        <img 
-            src={selected?.flag} 
-            alt={selected?.name} 
-            className="w-15 h-10 object-cover" />
+        <img
+          src={selected?.flag}
+          alt={selected?.name}
+          className="w-15 h-10 object-cover"
+        />
         {selected?.name}
       </button>
 

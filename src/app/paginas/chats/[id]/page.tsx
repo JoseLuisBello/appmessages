@@ -32,7 +32,7 @@ export default function ListaChats() {
       try {
         setLoading(true);
         // Obtener nombre del usuario
-        const userRes = await fetch(`/api/consulta/${userId}`, { cache: 'no-store' });
+        const userRes = await fetch(`/api/recuperar/${userId}`, { cache: 'no-store' });
         if (!userRes.ok) throw new Error('Error al obtener datos del usuario');
         const userData = await userRes.json();
         setNombreUsuario(userData?.nombre ?? 'Usuario');
@@ -78,18 +78,20 @@ export default function ListaChats() {
       {/* Header */}
       <div className="flex justify-between items-center p-4 bg-white shadow-sm sticky top-0 z-10">
         <h1 className="text-3xl font-bold text-[#4CAF50]">Chats</h1>
-        <button onClick={irAlPerfil} title="Ir al perfil" className="flex items-center gap-2">
-          <IoPersonCircleOutline size={32} />
-          <span>{nombreUsuario}</span>
-        </button>
-        <button
-          onClick={handleLogout}
-          title="Cerrar sesión"
-          className="flex items-center gap-2 text-red-600 font-semibold py-2 px-4 rounded-full"
-        >
-          <IoExitOutline size={24} />
-          Salir
-        </button>
+        <div className="flex items-center gap-4">
+          <button onClick={irAlPerfil} title="Ir al perfil" className="flex items-center gap-2">
+            <IoPersonCircleOutline size={32} />
+            <span>{nombreUsuario}</span>
+          </button>
+          <button
+            onClick={handleLogout}
+            title="Cerrar sesión"
+            className="flex items-center gap-2 text-red-600 font-semibold py-2 px-4 rounded-full"
+          >
+            <IoExitOutline size={24} />
+            Salir
+          </button>
+        </div>
       </div>
 
       {/* Lista de chats */}

@@ -18,15 +18,15 @@ INSERT INTO usuarios (nombre, contrasena, correo, nacionalidad, descripcion) VAL
 
 // creacion de la tabla de chat
 CREATE TABLE IF NOT EXISTS chat (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT PRIMARY KEY,
     user1 INT NOT NULL,
     user2 INT NOT NULL,
     FOREIGN KEY (user1) REFERENCES usuarios(id_usuario),
     FOREIGN KEY (user2) REFERENCES usuarios(id_usuario)
 );
 //insertar chats
-INSERT INTO chats (user1, user2) VALUES
-(1,2);
+INSERT INTO chats (id,user1, user2) VALUES
+(1,1,2);
 
 //creacion de la tabla mensaje
 CREATE TABLE IF NOT EXISTS mensaje(
