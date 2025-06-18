@@ -40,7 +40,7 @@ export default function NuevoChat() {
         const userData = await userRes.json();
         setNombreUsuario(userData?.nombre ?? 'Usuario');
 
-        const usersRes = await fetch(`/api/usuarios/${userId}`, { cache: 'no-store' });
+        const usersRes = await fetch(`/api/filtro/${userId}`, { cache: 'no-store' });
         if (!usersRes.ok) {
           const errorData = await usersRes.json();
           throw new Error(`Error al obtener otros usuarios: ${errorData.message || usersRes.statusText}`);
