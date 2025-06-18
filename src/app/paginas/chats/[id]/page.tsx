@@ -63,7 +63,7 @@ export default function ListaChats() {
   };
 
   const handleNewChat = () => {
-    router.push(`/paginas/nuevo-chat/${userId}`);
+    router.push(`/paginas/nuevochat/${userId}`);
   };
 
   const openChat = (chatId: number) => {
