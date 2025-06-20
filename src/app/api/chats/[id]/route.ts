@@ -12,8 +12,8 @@ export async function GET(_request: Request, { params }: { params: { id: string 
   try {
     const [rows]: any = await pool.query(
       `
-      SELECT 
-        c.id,
+      SELECT DISTINCT 
+        c.id_chat,
         c.user1,
         c.user2,
         CASE 
@@ -28,7 +28,15 @@ export async function GET(_request: Request, { params }: { params: { id: string 
       [id, id, id]
     );
 
-    return NextResponse.json(rows);
+    // Renombrar campo id_chat como id para compatibilidad con frontend
+    const formatted = rows.map((chat: any) => ({
+      id: chat.id_chat,
+      user1: chat.user1,
+      user2: chat.user2,
+      nombre_contacto: chat.nombre_contacto
+    }));
+
+    return NextResponse.json(formatted);
   } catch (error: any) {
     console.error('Error en la consulta:', error);
     return NextResponse.json(

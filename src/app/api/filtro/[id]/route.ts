@@ -1,3 +1,4 @@
+// /api/filtro/[id]/route.ts
 import pool from '@/app/database';
 import { NextResponse } from 'next/server';
 
@@ -9,17 +10,23 @@ export async function GET(_request: Request, { params }: { params: { id: string 
   }
 
   try {
+    // Seleccionar usuarios que no tienen chats con el usuario actual
     const [rows]: any = await pool.query(
-      `SELECT u.id_usuario, u.nombre
-       FROM usuarios u
-       WHERE u.id_usuario != ?
-       AND NOT EXISTS (
-           SELECT 1
-           FROM chat c
-           WHERE (c.user1 = ? AND c.user2 = u.id_usuario)
-              OR (c.user2 = ? AND c.user1 = u.id_usuario)
-       )`,
-      [id, id, id] 
+      `
+      SELECT u.id_usuario, u.nombre
+      FROM usuarios u
+      WHERE u.id_usuario != ?
+        AND u.id_usuario NOT IN (
+          SELECT DISTINCT
+            CASE
+              WHEN c.user1 = ? THEN c.user2
+              ELSE c.user1
+            END
+          FROM chat c
+          WHERE c.user1 = ? OR c.user2 = ?
+        )
+      `,
+      [id, id, id, id]
     );
 
     return NextResponse.json(rows);

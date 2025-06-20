@@ -36,6 +36,6 @@ CREATE TABLE IF NOT EXISTS mensaje(
   id_emisor INT NOT NULL,
   contenido TEXT NOT NULL,
   fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (id_chat) REFERENCES chat(id_chat),
+  FOREIGN KEY (id_chat) REFERENCES chat(id),
   FOREIGN KEY (id_emisor) REFERENCES usuarios(id_usuario)
   );

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { IoPersonCircleOutline, IoExitOutline, IoArrowBackOutline } from 'react-icons/io5';
 
-// Definición de la interfaz para un usuario
 interface User {
   id_usuario: number;
   nombre: string;
@@ -18,7 +17,7 @@ export default function NuevoChat() {
 
   const router = useRouter();
   const params = useParams();
-  const userId = params.id as string | undefined; // ID del usuario actual
+  const userId = params.id as string | undefined;
 
   useEffect(() => {
     if (!userId) {
@@ -31,21 +30,13 @@ export default function NuevoChat() {
       try {
         setLoading(true);
 
-        // Obtener el nombre del usuario actual
         const userRes = await fetch(`/api/recuperar/${userId}`, { cache: 'no-store' });
-        if (!userRes.ok) {
-          const errorData = await userRes.json();
-          throw new Error(`Error al obtener datos del usuario: ${errorData.message || userRes.statusText}`);
-        }
+        if (!userRes.ok) throw new Error('Error al obtener datos del usuario');
         const userData = await userRes.json();
         setNombreUsuario(userData?.nombre ?? 'Usuario');
 
-        // Obtener usuarios con los que no ha chateado
         const usersRes = await fetch(`/api/filtro/${userId}`, { cache: 'no-store' });
-        if (!usersRes.ok) {
-          const errorData = await usersRes.json();
-          throw new Error(`Error al obtener otros usuarios: ${errorData.message || usersRes.statusText}`);
-        }
+        if (!usersRes.ok) throw new Error('Error al obtener otros usuarios');
         const usersData: User[] = await usersRes.json();
         setAvailableUsers(usersData);
 
@@ -59,23 +50,13 @@ export default function NuevoChat() {
     fetchData();
   }, [userId]);
 
-  // Navega de regreso a la lista de chats
-  const goBackToChats = () => {
-    router.push(`/paginas/chats/${userId}`);
-  };
-
-  // Navega al perfil del usuario actual
-  const irAlPerfil = () => {
-    router.push(`/paginas/perfil/${userId}`);
-  };
-
-  // Cierra sesión
+  const goBackToChats = () => router.push(`/paginas/chats/${userId}`);
+  const irAlPerfil = () => router.push(`/paginas/perfil/${userId}`);
   const handleLogout = () => {
     localStorage.removeItem('user');
     router.push('/paginas/login');
   };
 
-  // Iniciar o recuperar chat
   const startChatWithUser = async (otherUserId: number, otherUserName: string) => {
     try {
       const response = await fetch('/api/chats/nuevo', {
@@ -90,9 +71,9 @@ export default function NuevoChat() {
       }
 
       const data = await response.json();
-      router.push(`/paginas/chat/${data.id_chat}?nombreContacto=${otherUserName}`);
-    } catch (createChatError) {
-      console.error('Error al iniciar chat:', createChatError);
+      router.push(`/paginas/chat/${data.id_chat}?usuario=${userId}&nombreContacto=${encodeURIComponent(otherUserName)}`);
+    } catch (err) {
+      console.error('Error al iniciar chat:', err);
       setError('No se pudo iniciar el chat. Intenta de nuevo.');
     }
   };
@@ -104,21 +85,17 @@ export default function NuevoChat() {
       {/* Header */}
       <div className="flex justify-between items-center p-4 bg-white shadow-sm sticky top-0 z-10">
         <div className="flex items-center gap-4">
-          <button onClick={goBackToChats} title="Volver a chats" className="text-gray-600 hover:text-[#4CAF50] transition-colors">
+          <button onClick={goBackToChats} title="Volver a chats" className="text-gray-600 hover:text-[#4CAF50]">
             <IoArrowBackOutline size={32} />
           </button>
           <h1 className="text-3xl font-bold text-[#4CAF50]">Nuevo Chat</h1>
         </div>
         <div className="flex items-center gap-4">
-          <button onClick={irAlPerfil} title="Ir al perfil" className="flex items-center gap-2">
+          <button onClick={irAlPerfil} className="flex items-center gap-2">
             <IoPersonCircleOutline size={32} />
             <span>{nombreUsuario}</span>
           </button>
-          <button
-            onClick={handleLogout}
-            title="Cerrar sesión"
-            className="flex items-center gap-2 text-red-600 font-semibold py-2 px-4 rounded-full"
-          >
+          <button onClick={handleLogout} className="text-red-600 font-semibold py-2 px-4 rounded-full flex items-center gap-2">
             <IoExitOutline size={24} />
             Salir
           </button>
@@ -144,7 +121,7 @@ export default function NuevoChat() {
             <p className="text-center text-gray-500 mb-4 text-lg">No hay otros usuarios disponibles para chatear en este momento.</p>
             <button
               onClick={goBackToChats}
-              className="bg-[#03A9F4] text-white py-2 px-6 rounded-md hover:bg-blue-600 transition-colors flex items-center gap-2"
+              className="bg-[#03A9F4] text-white py-2 px-6 rounded-md hover:bg-blue-600 flex items-center gap-2"
             >
               <IoArrowBackOutline size={24} /> Volver a la lista de chats
             </button>
