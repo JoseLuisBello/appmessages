@@ -21,10 +21,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ id_chat: existingChatRows[0].id });
     }
 
-    // Crear el nuevo chat
+    const [maxIdRows]: any = await pool.query(`SELECT MAX(id) as id FROM chat`);
+    const nuevoId = (maxIdRows[0].maxId || 0) + 1;
+
     const [insertResult]: any = await pool.query(
-      `INSERT INTO chat (user1, user2) VALUES (?, ?)`,
-      [user1, user2]
+      `INSERT INTO chat (id, user1, user2) VALUES ( ?, ?)`,
+      [nuevoId, user1, user2]
+    );
+
+    const [insertResult2]: any = await pool.query(
+      `INSERT INTO chat (id, user2, user1) VALUES ( ?, ?)`,
+      [nuevoId, user2, user1]
     );
 
     const id_chat = insertResult.insertId;
