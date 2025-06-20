@@ -95,6 +95,42 @@ Asegúrate de que la salida sea un JSON válido.
 Ejemplo de entrada: ["Hola", "Mundo"]
 Ejemplo de salida para inglés: ["Hello", "World"]
 
+Ejemplo de entrada: ["¿Cómo estás?", "Estoy muy bien, gracias."]
+Ejemplo de salida para inglés: ["How are you?", "I'm very well, thank you."]
+
+Ejemplo de entrada: ["Me gusta leer libros.", "Ella vive en una ciudad hermosa."]
+Ejemplo de salida para francés: ["J'aime lire des livres.", "Elle habite dans une belle ville."]
+
+Ejemplo de entrada: ["¿Puedes ayudarme, por favor?", "Quiero aprender mandarín."]
+Ejemplo de salida para chino: ["你能帮我吗？", "我想学普通话。"]
+
+Ejemplo de entrada: ["The weather is nice today.", "What time is it?"]
+Ejemplo de salida para español: ["El clima está agradable hoy.", "¿Qué hora es?"]
+
+Ejemplo de entrada: ["Where is the train station?", "I need a coffee."]
+Ejemplo de salida para francés: ["Où est la gare?", "J'ai besoin d'un café."]
+
+Ejemplo de entrada: ["Enjoy your meal!", "See you tomorrow."]
+Ejemplo de salida para chino: ["祝您用餐愉快！", "明天见。"]
+
+Ejemplo de entrada: ["Il fait froid dehors.", "Nous allons au marché."]
+Ejemplo de salida para español: ["Hace frío afuera.", "Vamos al mercado."]
+
+Ejemplo de entrada: ["C'est très intéressant.", "Parlez-vous anglais?"]
+Ejemplo de salida para inglés: ["It's very interesting.", "Do you speak English?"]
+
+Ejemplo de entrada: ["Bonne nuit.", "Où sont les toilettes?"]
+Ejemplo de salida para chino: ["晚安。", "厕所在哪里？"]
+
+Ejemplo de entrada: ["谢谢你。", "再见。"]
+Ejemplo de salida para español: ["Gracias.", "Adiós."]
+
+Ejemplo de entrada: ["我是学生。", "我爱我的家人。"]
+Ejemplo de salida para inglés: ["I am a student.", "I love my family."]
+
+Ejemplo de entrada: ["她很漂亮。", "他是一名医生。"]
+Ejemplo de salida para francés: ["Elle est très belle.", "Il est médecin."]
+
 Textos a traducir:
 ${JSON.stringify(contenidoOriginal, null, 2)}
       `;
