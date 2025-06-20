@@ -1,4 +1,3 @@
-// InputMensaje.tsx
 'use client';
 
 import { useState, useRef } from 'react';
@@ -6,28 +5,32 @@ import { FaPaperPlane } from "react-icons/fa6";
 import { BiSolidMicrophone } from "react-icons/bi";
 
 type Props = {
-  onEnviar: (mensaje: string | Blob) => void;
+  onEnviar: (mensaje: { tipo: 'texto' | 'audio'; contenido: string | Blob }) => void;
 };
 
 export default function InputMensaje({ onEnviar }: Props) {
   const [mensaje, setMensaje] = useState('');
+  const [grabando, setGrabando] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordStartTimeRef = useRef<number | null>(null);
 
   const handleEnviar = () => {
     if (mensaje.trim() === '') return;
-    onEnviar(mensaje.trim());
+    onEnviar({ tipo: 'texto', contenido: mensaje.trim() });
     setMensaje('');
   };
 
   const comenzarGrabacion = async () => {
+    if (grabando) return; // evitar iniciar otra grabación si ya está grabando
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
       recordStartTimeRef.current = Date.now();
+      setGrabando(true);
 
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
@@ -46,44 +49,29 @@ export default function InputMensaje({ onEnviar }: Props) {
           } catch {}
         }
 
-        // Enviar al componente
-        onEnviar(audioBlob);
+        onEnviar({ tipo: 'audio', contenido: audioBlob });
 
-        // 🔽 Enviar al backend para guardar
-        enviarAudioAlServidor(audioBlob);
-
+        // Detener tracks para liberar recursos
         stream.getTracks().forEach(track => track.stop());
+
+        // Limpiar referencias
+        mediaRecorderRef.current = null;
         recordStartTimeRef.current = null;
+        setGrabando(false);
       };
 
       mediaRecorder.start();
     } catch (error) {
       console.error('Error al acceder al micrófono', error);
+      setGrabando(false);
     }
   };
 
   const detenerGrabacion = () => {
-    if (mediaRecorderRef.current) {
+    if (mediaRecorderRef.current && grabando) {
       mediaRecorderRef.current.stop();
     }
   };
-
-  // Función para enviar el audio al servidor
-  const enviarAudioAlServidor = async (audioBlob: Blob) => {
-    const formData = new FormData();
-    formData.append('id_chat', '1'); // Usa el id real del chat
-    formData.append('id_emisor', '1'); // Usa el id real del emisor
-  
-    try {
-      await fetch('/api/guardar-audio', {
-        method: 'POST',
-        body: formData,
-      });
-    } catch (err) {
-      console.error('Error al guardar el audio en el servidor:', err);
-    }
-  };
-  
 
   return (
     <div className="flex items-center gap-2 p-2 bg-white text-black shadow-inner">
@@ -93,12 +81,16 @@ export default function InputMensaje({ onEnviar }: Props) {
         onChange={(e) => setMensaje(e.target.value)}
         placeholder="Escribe un mensaje"
         className="flex-1 border rounded-full px-4 py-2 text-sm focus:outline-none"
+        disabled={grabando} // opcional para no permitir escribir mientras graba
+        aria-label="Escribe un mensaje"
       />
 
       {mensaje.trim() ? (
         <button
           onClick={handleEnviar}
-          className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600"
+          className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 disabled:opacity-50"
+          disabled={grabando} // evitar enviar mientras graba
+          aria-label="Enviar mensaje de texto"
         >
           <FaPaperPlane />
         </button>
@@ -108,7 +100,9 @@ export default function InputMensaje({ onEnviar }: Props) {
           onMouseUp={detenerGrabacion}
           onTouchStart={comenzarGrabacion}
           onTouchEnd={detenerGrabacion}
-          className="p-2 bg-gray-200 rounded-full hover:bg-gray-300"
+          className={`p-2 rounded-full hover:bg-gray-300 ${grabando ? 'bg-red-400' : 'bg-gray-200'}`}
+          disabled={grabando && !mediaRecorderRef.current} // evitar bugs raros
+          aria-label={grabando ? 'Grabando...' : 'Grabar mensaje de voz'}
         >
           <BiSolidMicrophone />
         </button>

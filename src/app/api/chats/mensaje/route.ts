@@ -1,4 +1,3 @@
-// /api/chats/mensajes/route.ts
 import pool from '@/app/database';
 import { NextResponse } from 'next/server';
 
@@ -6,7 +5,12 @@ export async function POST(request: Request) {
   try {
     const { id_chat, id_emisor, contenido } = await request.json();
 
-    if (!id_chat || !id_emisor || !contenido) {
+    if (
+      id_chat === undefined ||
+      id_emisor === undefined ||
+      contenido === undefined ||
+      contenido.trim() === ''
+    ) {
       return NextResponse.json({ message: 'Datos incompletos' }, { status: 400 });
     }
 

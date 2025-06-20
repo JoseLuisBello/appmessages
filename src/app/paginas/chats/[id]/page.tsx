@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { IoPersonCircleOutline, IoExitOutline, IoChatbubblesOutline } from 'react-icons/io5';
+import { IoPersonCircleOutline, IoExitOutline } from 'react-icons/io5';
 
 interface Chat {
   id: number;
@@ -95,8 +95,8 @@ export default function ListaChats() {
         </div>
       </div>
 
-      {/* Lista de chats */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      {/* Lista de chats y botón siempre visible */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col">
         {chats.length > 0 ? (
           chats.map((chat) => (
             <div
@@ -109,16 +109,18 @@ export default function ListaChats() {
             </div>
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center h-full mt-10">
-            <p className="text-center text-gray-500 mb-4">No tienes chats aún</p>
-            <button
-              onClick={handleNewChat}
-              className="bg-[#03A9F4] text-white py-2 px-6 rounded-md hover:bg-blue-600 transition-colors"
-            >
-              Iniciar un nuevo chat
-            </button>
-          </div>
+          <p className="text-center text-gray-500 mb-4 mt-10">No tienes chats aún</p>
         )}
+
+        {/* Botón siempre visible para iniciar nuevo chat */}
+        <div className="mt-auto flex justify-center">
+          <button
+            onClick={handleNewChat}
+            className="bg-[#03A9F4] text-white py-2 px-6 rounded-md hover:bg-blue-600 transition-colors"
+          >
+            Iniciar un nuevo chat
+          </button>
+        </div>
       </div>
     </div>
   );
