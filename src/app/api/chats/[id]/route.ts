@@ -9,12 +9,22 @@ export async function GET(_request: Request, { params }: { params: { id: string 
   }
 
   try {
-    // Solo obtener chats donde user1 = id (usuario logueado)
     const [rows]: any = await pool.query(
-      `SELECT id, user1, user2
-       FROM chat
-       WHERE user1 = ?`,
-      [id]
+      `
+      SELECT 
+        c.id,
+        c.user1,
+        c.user2,
+        CASE 
+          WHEN c.user1 = ? THEN u2.nombre
+          ELSE u1.nombre
+        END AS nombre_contacto
+      FROM chat c
+      JOIN usuarios u1 ON c.user1 = u1.id
+      JOIN usuarios u2 ON c.user2 = u2.id
+      WHERE c.user1 = ? OR c.user2 = ?
+      `,
+      [id, id, id]
     );
 
     return NextResponse.json(rows);
