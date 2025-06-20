@@ -31,7 +31,7 @@ export async function POST(request: Request) {
 
     const [insertResult2]: any = await pool.query(
       `INSERT INTO chat (id, user2, user1) VALUES ( ?, ?, ?)`,
-      [nuevoId, user2, user1]
+      [nuevoId + 1, user2, user1]
     );
 
     const id_chat = insertResult.insertId;
