@@ -1,0 +1,40 @@
+import pool from '@/app/database';
+import { NextResponse } from 'next/server';
+
+export async function POST(request: Request) {
+  try {
+    const { user1, user2 } = await request.json();
+
+    if (!user1 || !user2 || isNaN(user1) || isNaN(user2)) {
+      return NextResponse.json({ message: 'Parámetros inválidos' }, { status: 400 });
+    }
+
+    // Verificar si ya existe el chat (sin importar el orden)
+    const [existingChatRows]: any = await pool.query(
+      `SELECT id FROM chat
+       WHERE (user1 = ? AND user2 = ?)
+          OR (user1 = ? AND user2 = ?)`,
+      [user1, user2, user2, user1]
+    );
+
+    if (existingChatRows.length > 0) {
+      return NextResponse.json({ id_chat: existingChatRows[0].id });
+    }
+
+    // Crear el nuevo chat
+    const [insertResult]: any = await pool.query(
+      `INSERT INTO chat (user1, user2) VALUES (?, ?)`,
+      [user1, user2]
+    );
+
+    const id_chat = insertResult.insertId;
+
+    return NextResponse.json({ id_chat });
+  } catch (error: any) {
+    console.error('Error en la creación del chat:', error);
+    return NextResponse.json(
+      { message: 'Error en la creación del chat', details: error.message },
+      { status: 500 }
+    );
+  }
+}

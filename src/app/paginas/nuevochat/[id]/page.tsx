@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { IoPersonCircleOutline, IoExitOutline, IoArrowBackOutline, IoChatbubblesOutline } from 'react-icons/io5';
+import { IoPersonCircleOutline, IoExitOutline, IoArrowBackOutline } from 'react-icons/io5';
 
-// Definición de la interfaz para un usuario (adaptada de la modificación del API route)
+// Definición de la interfaz para un usuario
 interface User {
   id_usuario: number;
   nombre: string;
@@ -40,6 +40,7 @@ export default function NuevoChat() {
         const userData = await userRes.json();
         setNombreUsuario(userData?.nombre ?? 'Usuario');
 
+        // Obtener usuarios con los que no ha chateado
         const usersRes = await fetch(`/api/filtro/${userId}`, { cache: 'no-store' });
         if (!usersRes.ok) {
           const errorData = await usersRes.json();
@@ -68,15 +69,28 @@ export default function NuevoChat() {
     router.push(`/paginas/perfil/${userId}`);
   };
 
-  // Maneja el cierre de sesión
+  // Cierra sesión
   const handleLogout = () => {
     localStorage.removeItem('user');
     router.push('/paginas/login');
   };
 
+  // Iniciar o recuperar chat
   const startChatWithUser = async (otherUserId: number, otherUserName: string) => {
     try {
-      router.push(`/paginas/chat?user1=${userId}&user2=${otherUserId}&nombreContacto=${otherUserName}`);
+      const response = await fetch('/api/chat/nuevo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user1: Number(userId), user2: otherUserId }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || 'Error al crear o recuperar el chat');
+      }
+
+      const data = await response.json();
+      router.push(`/paginas/chat/${data.id_chat}?nombreContacto=${otherUserName}`);
     } catch (createChatError) {
       console.error('Error al iniciar chat:', createChatError);
       setError('No se pudo iniciar el chat. Intenta de nuevo.');

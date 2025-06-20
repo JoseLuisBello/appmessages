@@ -66,11 +66,13 @@ export default function ListaChats() {
     router.push(`/paginas/nuevochat/${userId}`);
   };
 
-  const openChat = (chatId: number) => {
-    router.push(`/paginas/chat/${chatId}?usuario=${userId}`);
+  const openChat = (chat: Chat) => {
+    router.push(
+      `/paginas/chat/${chat.id}?usuario=${userId}&nombreContacto=${encodeURIComponent(chat.nombre_contacto)}`
+    );
   };
 
-  if (error) return <p>Error: {error}</p>;
+  if (error) return <p className="text-center text-red-600 mt-10 font-semibold">Error: {error}</p>;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#E6F4EA] text-black">
@@ -99,7 +101,7 @@ export default function ListaChats() {
           chats.map((chat) => (
             <div
               key={chat.id}
-              onClick={() => openChat(chat.id)}
+              onClick={() => openChat(chat)}
               className="p-4 rounded-xl shadow-md cursor-pointer bg-white hover:bg-gray-50"
             >
               <h2 className="font-semibold text-lg text-[#4CAF50]">{chat.nombre_contacto}</h2>
