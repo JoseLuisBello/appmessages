@@ -1,3 +1,4 @@
+// /api/chats/[id]/route.ts
 import pool from '@/app/database';
 import { NextResponse } from 'next/server';
 
@@ -20,11 +21,11 @@ export async function GET(_request: Request, { params }: { params: { id: string 
           ELSE u1.nombre
         END AS nombre_contacto
       FROM chat c
-      JOIN usuarios u1 ON c.user1 = u1.id
-      JOIN usuarios u2 ON c.user2 = u2.id
+      JOIN usuarios u1 ON c.user1 = u1.id_usuario
+      JOIN usuarios u2 ON c.user2 = u2.id_usuario
       WHERE c.user1 = ? OR c.user2 = ?
       `,
-      [id, id, id] 
+      [id, id, id]
     );
 
     return NextResponse.json(rows);
