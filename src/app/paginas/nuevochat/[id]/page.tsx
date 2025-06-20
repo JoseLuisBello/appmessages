@@ -78,7 +78,7 @@ export default function NuevoChat() {
   // Iniciar o recuperar chat
   const startChatWithUser = async (otherUserId: number, otherUserName: string) => {
     try {
-      const response = await fetch('/api/chat/nuevo', {
+      const response = await fetch('/api/chats/nuevo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user1: Number(userId), user2: otherUserId }),
