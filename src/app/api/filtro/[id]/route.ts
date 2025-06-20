@@ -19,10 +19,9 @@ export async function GET(_request: Request, { params }: { params: { id: string 
            WHERE (c.user1 = ? AND c.user2 = u.id_usuario)
               OR (c.user2 = ? AND c.user1 = u.id_usuario)
        )`,
-      [id, id, id] // Pasa el ID del usuario actual tres veces para los placeholders
+      [id, id, id] 
     );
 
-    // Si no hay otros usuarios sin un chat existente, se retorna una lista vacía sin error
     return NextResponse.json(rows);
   } catch (error: any) {
     console.error('Error en la consulta:', error);
