@@ -71,8 +71,9 @@ export default function InputMensaje({ onEnviar }: Props) {
   // Función para enviar el audio al servidor
   const enviarAudioAlServidor = async (audioBlob: Blob) => {
     const formData = new FormData();
-    formData.append('audio', audioBlob, `grabacion_${Date.now()}.webm`);
-
+    formData.append('id_chat', '1'); // Usa el id real del chat
+    formData.append('id_emisor', '1'); // Usa el id real del emisor
+  
     try {
       await fetch('/api/guardar-audio', {
         method: 'POST',
@@ -82,6 +83,7 @@ export default function InputMensaje({ onEnviar }: Props) {
       console.error('Error al guardar el audio en el servidor:', err);
     }
   };
+  
 
   return (
     <div className="flex items-center gap-2 p-2 bg-white text-black shadow-inner">
