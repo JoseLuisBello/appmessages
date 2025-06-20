@@ -24,7 +24,7 @@ export async function GET(_request: Request, { params }: { params: { id: string 
       JOIN usuarios u2 ON c.user2 = u2.id
       WHERE c.user1 = ? OR c.user2 = ?
       `,
-      [id, id, id]
+      [id, id, id] 
     );
 
     return NextResponse.json(rows);
