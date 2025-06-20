@@ -12,31 +12,20 @@ export async function GET(_request: Request, { params }: { params: { id: string 
   try {
     const [rows]: any = await pool.query(
       `
-      SELECT DISTINCT 
-        c.id_chat,
+      SELECT 
+        c.id_chat AS id,
         c.user1,
         c.user2,
-        CASE 
-          WHEN c.user1 = ? THEN u2.nombre
-          ELSE u1.nombre
-        END AS nombre_contacto
+        u2.nombre AS nombre_contacto
       FROM chat c
       JOIN usuarios u1 ON c.user1 = u1.id_usuario
       JOIN usuarios u2 ON c.user2 = u2.id_usuario
-      WHERE c.user1 = ? OR c.user2 = ?
+      WHERE c.user1 = ?
       `,
-      [id, id, id]
+      [id]
     );
 
-    // Renombrar campo id_chat como id para compatibilidad con frontend
-    const formatted = rows.map((chat: any) => ({
-      id: chat.id_chat,
-      user1: chat.user1,
-      user2: chat.user2,
-      nombre_contacto: chat.nombre_contacto
-    }));
-
-    return NextResponse.json(formatted);
+    return NextResponse.json(rows);
   } catch (error: any) {
     console.error('Error en la consulta:', error);
     return NextResponse.json(
