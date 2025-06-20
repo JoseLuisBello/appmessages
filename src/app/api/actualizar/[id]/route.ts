@@ -63,7 +63,7 @@ export async function PUT(
 
     // Obtener datos del usuario a traducir
     const [datosUsuario]: any = await pool.query(
-      `SELECT id_usuario, nombre, descripcion
+      `SELECT nombre, descripcion
        FROM usuarios
        WHERE id_usuario = ?`,
       [id_usuario]
@@ -75,7 +75,6 @@ export async function PUT(
     }
 
     const usuarioATraducir = datosUsuario[0];
-    let nombreTraducido = usuarioATraducir.nombre;
     let descripcionTraducida = usuarioATraducir.descripcion;
     // console log para mostrar los datos extraidos de la base de datos
     /* console.log('Datos extraídos de la base de datos para ID', id_usuario, ':', {
@@ -86,7 +85,7 @@ export async function PUT(
     if (API_KEY) {
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-      const contenidoOriginal = [usuarioATraducir.nombre, usuarioATraducir.descripcion];
+      const contenidoOriginal = [usuarioATraducir.descripcion];
       const prompt = `
 Traduce el siguiente arreglo de textos al idioma "${idiomaDestino}".
 Mantén el orden. No alteres el formato, solo responde con un arreglo de cadenas traducidas.
@@ -147,13 +146,12 @@ ${JSON.stringify(contenidoOriginal, null, 2)}
         //console.log('Traducciones parseadas de Gemini:', traducciones);
 
         if (traducciones.length === 2) {
-          nombreTraducido = traducciones[0];
           descripcionTraducida = traducciones[1];
 
-          console.log('Intentando actualizar nombre y descripcion para ID:', id_usuario, 'nombre traducido:', nombreTraducido, 'descripcion traducida:', descripcionTraducida);
+          console.log('Intentando actualizar nombre y descripcion para ID:', id_usuario, 'descripcion traducida:', descripcionTraducida);
           await pool.query(
-            `UPDATE usuarios SET nombre = ?, descripcion = ? WHERE id_usuario = ?`,
-            [nombreTraducido, descripcionTraducida, id_usuario]
+            `UPDATE usuarios SET descripcion = ? WHERE id_usuario = ?`,
+            [ descripcionTraducida, id_usuario]
           );
           console.log('Consulta de actualización de nombre/descripcion ejecutada con éxito.');
         } else {
@@ -174,7 +172,6 @@ ${JSON.stringify(contenidoOriginal, null, 2)}
       usuario: {
         id_usuario: id_usuario,
         nacionalidad: nuevaNacionalidad !== undefined ? nuevaNacionalidad : nacionalidad,
-        nombre: nombreTraducido,
         descripcion: descripcionTraducida,
       },
     });
