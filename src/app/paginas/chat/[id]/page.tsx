@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { HiPlay, HiPause } from "react-icons/hi2";
 import { FaPaperPlane } from "react-icons/fa";
+import { IoArrowBackSharp } from 'react-icons/io5';
 
 // --- COMPONENTE MENSAJE ---
 function formatTime(segundosTotal: number): string {
@@ -121,7 +122,7 @@ function Mensaje({ texto, propio }: { texto: string | Blob; propio: boolean }) {
   );
 }
 
-// --- COMPONENTE INPUT 
+// --- COMPONENTE INPUT ---
 function MessageInput({ onSendMessage }: { onSendMessage: (msg: string) => void }) {
   const [inputValue, setInputValue] = useState('');
 
@@ -171,12 +172,16 @@ type MensajeData = {
 export default function ChatIndividualPage() {
   const [mensajes, setMensajes] = useState<MensajeData[]>([]);
   const chatRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
+
   const chatId = params.id!;
   const userId = searchParams.get('usuario')!;
   const nombreContacto = searchParams.get('nombreContacto') ?? 'Contacto';
 
+  // --- CARGAR MENSAJES ---
+  /*
   useEffect(() => {
     const fetchMensajes = async () => {
       try {
@@ -197,11 +202,14 @@ export default function ChatIndividualPage() {
 
     fetchMensajes();
   }, [chatId, userId]);
+  */
 
   useEffect(() => {
     chatRef.current?.scrollTo(0, chatRef.current.scrollHeight);
   }, [mensajes]);
 
+  // --- ENVIAR MENSAJE ---
+  /*
   const enviarMensaje = async (contenido: string) => {
     if (!userId || !chatId) return;
 
@@ -226,18 +234,36 @@ export default function ChatIndividualPage() {
       console.error('Error al enviar mensaje:', err);
     }
   };
+  */
+
+  const volverAChats = () => {
+    if (userId) {
+      router.push(`/paginas/chats/${userId}`);
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen bg-[#e5ddd5]">
-      <div className="bg-[#4CAF50] text-white p-4 font-bold text-xl">
+      {/* Encabezado con botón de regreso */}
+      <div className="bg-[#4CAF50] text-white p-4 font-bold text-xl flex items-center gap-4">
+        <button onClick={volverAChats} className="text-white hover:text-gray-200 text-2xl">
+          <IoArrowBackSharp />
+        </button>
         {nombreContacto}
       </div>
+
+      {/* Mensajes */}
       <div ref={chatRef} className="flex-1 overflow-y-auto pt-4 pb-2 px-2">
         {mensajes.map((m, i) => (
           <Mensaje key={m.id ?? `${m.texto}-${i}`} texto={m.texto} propio={m.propio} />
         ))}
       </div>
-      <MessageInput onSendMessage={enviarMensaje} />
+
+      {/* Input deshabilitado temporalmente */}
+      {/* <MessageInput onSendMessage={enviarMensaje} /> */}
+      <div className="p-4 bg-white border-t text-center text-gray-500 text-sm">
+        Envío de mensajes deshabilitado temporalmente.
+      </div>
     </div>
   );
 }
