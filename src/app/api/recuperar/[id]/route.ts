@@ -1,11 +1,11 @@
 // src/app/api/consulta/[id]/route.ts
 import pool from '@/app/database';
+import { request } from 'http';
 import { NextResponse } from 'next/server';
 
-export async function GET(_request: Request,
-  { params }: { params: { id: string } }
-) {
-  const id = Number(params.id);
+export async function GET(request: Request) {
+  const idStr = new URL(request.url).pathname.split('/').pop() || '';
+  const id = Number(idStr);
 
   if (isNaN(id)) {
     return NextResponse.json({ error: 'ID inválido' }, { status: 400 });

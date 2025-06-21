@@ -10,17 +10,16 @@ export default function ProfilePage() {
   const [nombreUsuario, setNombreUsuario] = useState<string | null>(null);
   const [mailUsuario, setmailUsuario] = useState<string | null>(null);
   const [desUsuario, setdeslUsuario] = useState<string | null>(null);
-  // Mantendremos nacioUsuario para mostrar el texto si no se usa LanguageSelector
   const [nacioUsuario, setnaciolUsuario] = useState<string | null>(null);
 
   const params = useParams();
-  const router = useRouter(); // Asegúrate de importar useRouter si lo usas en alguna otra parte
+  const router = useRouter(); 
 
   const userId = params.id as string | undefined;
 
   // Efecto para cargar los datos del usuario
-  useEffect(() => {
-    const fetchUserData = async () => {
+
+  const fetchUserData = async () => {
       if (!userId) {
         console.warn("ID de usuario no encontrado en la URL. No se pueden cargar los datos.");
         setNombreUsuario('Invitado');
@@ -28,7 +27,7 @@ export default function ProfilePage() {
       }
 
       try {
-        // Asumiendo que tu API de recuperar devuelve también la nacionalidad
+        // recuperar datos
         const res = await fetch(`/api/recuperar/${userId}`, { cache: 'no-store' });
 
         if (!res.ok) {
@@ -54,6 +53,7 @@ export default function ProfilePage() {
       }
     };
 
+  useEffect(() => {
     fetchUserData();
   }, [userId]);
 
@@ -61,7 +61,7 @@ export default function ProfilePage() {
     router.push(`/paginas/chats/${userId}`);
   };
 
-  // Función para manejar el cambio de nacionalidad y guardarlo en la base de datos
+  // Función para manejar el cambio de nacionalidad
   const handleNacionalidadChange = async (newNacionalidadCode: string) => {
     if (!userId) {
       console.warn("No hay ID de usuario para guardar la nacionalidad.");
@@ -69,7 +69,6 @@ export default function ProfilePage() {
     }
 
     try {
-      // Llama a tu API de actualización para el campo 'nacionalidad'
       const res = await fetch(`/api/actualizar/${userId}`, {
         method: 'PUT',
         headers: {
@@ -81,16 +80,14 @@ export default function ProfilePage() {
       if (!res.ok) {
         const errorData = await res.json();
         console.error(`Error al actualizar la nacionalidad (${res.status}): ${errorData.error || 'Error desconocido'}`);
-        // Considera mostrar un mensaje de error discreto al usuario o loguearlo
         return;
       }
 
       setnaciolUsuario(newNacionalidadCode); // Actualiza el estado local con la nueva nacionalidad
       console.log(`Nacionalidad actualizada a: ${newNacionalidadCode}`);
-      // No necesitas un alert aquí, ya que el cambio visual es instantáneo
+      await fetchUserData();
     } catch (error) {
       console.error("Error de conexión al actualizar la nacionalidad:", error);
-      // Igualmente, considera si un alert es necesario aquí.
     }
   };
 

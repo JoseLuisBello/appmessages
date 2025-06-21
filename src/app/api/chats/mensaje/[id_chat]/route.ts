@@ -2,8 +2,9 @@
 import pool from '@/app/database';
 import { NextResponse } from 'next/server';
 
-export async function GET(_request: Request, { params }: { params: { id_chat: string } }) {
-  const id_chat = Number(params.id_chat);
+export async function GET(request: Request) {
+  const idStr = new URL(request.url).pathname.split('/').pop() || '';
+  const id_chat = Number(idStr);
 
   if (isNaN(id_chat)) {
     return NextResponse.json({ message: 'ID de chat inválido' }, { status: 400 });
