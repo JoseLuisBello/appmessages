@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { HiPlay, HiPause } from "react-icons/hi2";
+import { FaPaperPlane } from "react-icons/fa";
 
 // --- COMPONENTE MENSAJE ---
 function formatTime(segundosTotal: number): string {
@@ -120,7 +121,7 @@ function Mensaje({ texto, propio }: { texto: string | Blob; propio: boolean }) {
   );
 }
 
-// --- COMPONENTE INPUT ---
+// --- COMPONENTE INPUT 
 function MessageInput({ onSendMessage }: { onSendMessage: (msg: string) => void }) {
   const [inputValue, setInputValue] = useState('');
 
@@ -141,7 +142,7 @@ function MessageInput({ onSendMessage }: { onSendMessage: (msg: string) => void 
   };
 
   return (
-    <div className="flex items-center p-4 border-t border-gray-200 bg-white">
+    <div className="flex items-center p-4 border-t border-gray-200 bg-white text-black">
       <input
         type="text"
         className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -154,7 +155,7 @@ function MessageInput({ onSendMessage }: { onSendMessage: (msg: string) => void 
         onClick={handleSend}
         className="ml-2 px-4 py-2 bg-green-500 text-black rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-700"
       >
-        Enviar
+        <FaPaperPlane />
       </button>
     </div>
   );
@@ -229,7 +230,7 @@ export default function ChatIndividualPage() {
   return (
     <div className="flex flex-col h-screen bg-[#e5ddd5]">
       <div className="bg-[#4CAF50] text-white p-4 font-bold text-xl">
-        Chat con {nombreContacto}
+        {nombreContacto}
       </div>
       <div ref={chatRef} className="flex-1 overflow-y-auto pt-4 pb-2 px-2">
         {mensajes.map((m, i) => (
