@@ -1,30 +1,17 @@
-import pool from '@/app/database';
 import { NextResponse } from 'next/server';
+import pool from '@/app/database';
 
-export async function POST(request: Request) {
+export async function GET(_req: Request, { params }: { params: { id_chat: string } }) {
+  const chatId = Number(params.id_chat);
+  if (isNaN(chatId)) return NextResponse.json({ error: 'ID de chat inválido' }, { status: 400 });
+
   try {
-    const { id_chat, id_emisor, contenido } = await request.json();
-
-    if (
-      id_chat === undefined ||
-      id_emisor === undefined ||
-      contenido === undefined ||
-      contenido.trim() === ''
-    ) {
-      return NextResponse.json({ message: 'Datos incompletos' }, { status: 400 });
-    }
-
-    const [result]: any = await pool.query(
-      `INSERT INTO mensaje (id_chat, id_emisor, contenido) VALUES (?, ?, ?)`,
-      [id_chat, id_emisor, contenido]
+    const [rows] = await pool.query(
+      'SELECT id_mensaje, id_emisor, contenido, fecha FROM mensaje WHERE id_chat = ? ORDER BY fecha ASC',
+      [chatId]
     );
-
-    return NextResponse.json({ message: 'Mensaje enviado', id_mensaje: result.insertId });
-  } catch (err: any) {
-    console.error('Error al enviar mensaje:', err);
-    return NextResponse.json(
-      { message: 'Error al enviar mensaje', detail: err.message },
-      { status: 500 }
-    );
+    return NextResponse.json(rows);
+  } catch (error) {
+    return NextResponse.json({ error: 'Error al obtener mensajes' }, { status: 500 });
   }
 }
