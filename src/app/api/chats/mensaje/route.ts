@@ -1,30 +1,23 @@
+import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/app/database';
-import { NextResponse } from 'next/server';
+import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { id_chat, id_emisor, contenido } = await request.json();
+    const { id_chat, id_emisor, contenido } = await req.json();
 
-    if (
-      id_chat === undefined ||
-      id_emisor === undefined ||
-      contenido === undefined ||
-      contenido.trim() === ''
-    ) {
-      return NextResponse.json({ message: 'Datos incompletos' }, { status: 400 });
+    if (!id_chat || !id_emisor || !contenido || typeof contenido !== 'string') {
+      return NextResponse.json({ error: 'Datos incompletos o inválidos' }, { status: 400 });
     }
 
-    const [result]: any = await pool.query(
-      `INSERT INTO mensaje (id_chat, id_emisor, contenido) VALUES (?, ?, ?)`,
+    const [result] = await pool.query<ResultSetHeader>(
+      'INSERT INTO mensaje (id_chat, id_emisor, contenido, fecha) VALUES (?, ?, ?, NOW())',
       [id_chat, id_emisor, contenido]
     );
 
-    return NextResponse.json({ message: 'Mensaje enviado', id_mensaje: result.insertId });
-  } catch (err: any) {
-    console.error('Error al enviar mensaje:', err);
-    return NextResponse.json(
-      { message: 'Error al enviar mensaje', detail: err.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true, id: result.insertId });
+  } catch (error) {
+    console.error('Error al guardar mensaje:', error);
+    return NextResponse.json({ error: 'Error al guardar mensaje' }, { status: 500 });
   }
 }

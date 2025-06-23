@@ -1,30 +1,17 @@
-// /api/chats/mensajes/[id_chat]/route.ts
-import pool from '@/app/database';
 import { NextResponse } from 'next/server';
+import pool from '@/app/database';
 
-export async function GET(request: Request) {
-  const idStr = new URL(request.url).pathname.split('/').pop() || '';
-  const id_chat = Number(idStr);
-
-  if (isNaN(id_chat)) {
-    return NextResponse.json({ message: 'ID de chat inválido' }, { status: 400 });
-  }
+export async function GET(_req: Request, { params }: { params: { id_chat: string } }) {
+  const chatId = Number(params.id_chat);
+  if (isNaN(chatId)) return NextResponse.json({ error: 'ID de chat inválido' }, { status: 400 });
 
   try {
-    const [rows]: any = await pool.query(
-      `SELECT id_mensaje, id_emisor, contenido, fecha
-       FROM mensaje
-       WHERE id_chat = ?
-       ORDER BY fecha ASC`,
-      [id_chat]
+    const [rows] = await pool.query(
+      'SELECT id_mensaje, id_emisor, contenido, fecha FROM mensaje WHERE id_chat = ? ORDER BY fecha ASC',
+      [chatId]
     );
-
-    return NextResponse.json(rows ?? []);
-  } catch (err: any) {
-    console.error('Error al recuperar mensajes:', err);
-    return NextResponse.json(
-      { message: 'Error al recuperar mensajes', detail: err.message },
-      { status: 500 }
-    );
+    return NextResponse.json(rows);
+  } catch (error) {
+    return NextResponse.json({ error: 'Error al obtener mensajes' }, { status: 500 });
   }
 }
