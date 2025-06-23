@@ -6,7 +6,6 @@ import { HiPlay, HiPause } from "react-icons/hi2";
 import { FaPaperPlane } from "react-icons/fa";
 import { IoArrowBackSharp } from 'react-icons/io5';
 
-// --- COMPONENTE MENSAJE ---
 function formatTime(segundosTotal: number): string {
   if (isNaN(segundosTotal) || segundosTotal < 0) return '00:00';
   const minutos = Math.floor(segundosTotal / 60);
@@ -14,7 +13,7 @@ function formatTime(segundosTotal: number): string {
   return `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
 }
 
-function Mensaje({ texto, propio }: { texto: string | Blob; propio: boolean }) {
+function Mensaje({ texto, propio, fecha }: { texto: string | Blob; propio: boolean; fecha?: string }) {
   const isAudio = texto instanceof Blob;
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [injectedDuration, setInjectedDuration] = useState<number | null>(null);
@@ -115,14 +114,16 @@ function Mensaje({ texto, propio }: { texto: string | Blob; propio: boolean }) {
             <audio ref={audioRef} src={audioUrl} preload="metadata" hidden onTimeUpdate={handleTimeUpdate} onEnded={handleEnded} />
           </div>
         ) : (
-          typeof texto === 'string' ? <span>{texto}</span> : null
+          <div className="flex flex-col">
+            <span>{typeof texto === 'string' ? texto : ''}</span>
+            {fecha && <span className="text-xs text-gray-400 text-right mt-1">{new Date(fecha).toLocaleTimeString()}</span>}
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-// --- COMPONENTE INPUT ---
 function MessageInput({ onSendMessage }: { onSendMessage: (msg: string) => void }) {
   const [inputValue, setInputValue] = useState('');
 
@@ -162,11 +163,13 @@ function MessageInput({ onSendMessage }: { onSendMessage: (msg: string) => void 
   );
 }
 
+
 // --- COMPONENTE PRINCIPAL ---
 type MensajeData = {
   id?: number;
-  texto: string | Blob;
+  texto: string;
   propio: boolean;
+  fecha?: string;
 };
 
 export default function ChatIndividualPage() {
@@ -180,12 +183,10 @@ export default function ChatIndividualPage() {
   const userId = searchParams.get('usuario')!;
   const nombreContacto = searchParams.get('nombreContacto') ?? 'Contacto';
 
-  // --- CARGAR MENSAJES ---
-  /*
   useEffect(() => {
     const fetchMensajes = async () => {
       try {
-        const res = await fetch(`/api/chats/mensajes/${chatId}`);
+        const res = await fetch(`/api/mensaje/${chatId}`);
         if (!res.ok) throw new Error('Error al cargar mensajes');
         const data = await res.json();
 
@@ -193,28 +194,28 @@ export default function ChatIndividualPage() {
           id: m.id_mensaje,
           texto: m.contenido,
           propio: String(m.id_emisor) === userId,
+          fecha: m.fecha
         }));
+
         setMensajes(mensajesFormateados);
       } catch (err) {
         console.error('Error al cargar mensajes:', err);
+        alert('No se pudieron cargar los mensajes.');
       }
     };
 
     fetchMensajes();
   }, [chatId, userId]);
-  */
 
   useEffect(() => {
     chatRef.current?.scrollTo(0, chatRef.current.scrollHeight);
   }, [mensajes]);
 
-  // --- ENVIAR MENSAJE ---
-  /*
   const enviarMensaje = async (contenido: string) => {
     if (!userId || !chatId) return;
 
     try {
-      const res = await fetch('/api/chats/mensajes', {
+      const res = await fetch('/api/mensaje', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -228,13 +229,13 @@ export default function ChatIndividualPage() {
 
       setMensajes((prev) => [
         ...prev,
-        { texto: contenido, propio: true, id: Date.now() },
+        { texto: contenido, propio: true, id: Date.now(), fecha: new Date().toISOString() },
       ]);
     } catch (err) {
       console.error('Error al enviar mensaje:', err);
+      alert('No se pudo enviar el mensaje.');
     }
   };
-  */
 
   const volverAChats = () => {
     if (userId) {
@@ -244,7 +245,6 @@ export default function ChatIndividualPage() {
 
   return (
     <div className="flex flex-col h-screen bg-[#e5ddd5]">
-      {/* Encabezado con botón de regreso */}
       <div className="bg-[#4CAF50] text-white p-4 font-bold text-xl flex items-center gap-4">
         <button onClick={volverAChats} className="text-white hover:text-gray-200 text-2xl">
           <IoArrowBackSharp />
@@ -252,18 +252,13 @@ export default function ChatIndividualPage() {
         {nombreContacto}
       </div>
 
-      {/* Mensajes */}
       <div ref={chatRef} className="flex-1 overflow-y-auto pt-4 pb-2 px-2">
         {mensajes.map((m, i) => (
-          <Mensaje key={m.id ?? `${m.texto}-${i}`} texto={m.texto} propio={m.propio} />
+          <Mensaje key={m.id ?? `${m.texto}-${i}`} texto={m.texto} propio={m.propio} fecha={m.fecha} />
         ))}
       </div>
 
-      {/* Input deshabilitado temporalmente */}
-      {/* <MessageInput onSendMessage={enviarMensaje} /> */}
-      <div className="p-4 bg-white border-t text-center text-gray-500 text-sm">
-        Envío de mensajes deshabilitado temporalmente.
-      </div>
+      <MessageInput onSendMessage={enviarMensaje} />
     </div>
   );
 }
